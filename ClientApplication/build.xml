@@ -1,0 +1,65 @@
+<project basedir="." default="build" name="ClientApplication">
+	
+	<property name="build_directory" value="bin"/>
+	<property name="src_directory" value="src"/>
+	<property name="generated_directory" value="${build_directory}/generated"/>
+	<property name="executable_name" value="distribution.jar"/>
+    <property name="debug_level" value="source,lines,vars"/>
+    <property name="target_compiler" value="1.8"/>
+    <property name="source_compiler" value="1.8"/>
+    <property name="author" value="Jesus, Hivinau"/>
+    <property name="app_name" value="ClientApplication"/>
+    <property name="app_version" value="1.0.1"/>
+	
+	<path id="classpath">
+		<fileset dir="${generated_directory}">
+			<include name="*.jar"/>
+		</fileset>
+		<pathelement location="${generated_directory}"/>
+	</path>
+	
+	<target name="clean">
+		<delete dir="${generated_directory}"/>
+	</target>
+	
+	<target name="init">
+		<mkdir dir="${generated_directory}"/>
+		<copy includeemptydirs="false" todir="${generated_directory}">
+			<fileset dir="${src_directory}">
+				<exclude name="**/*.launch"/>
+				<exclude name="**/*.java"/>
+			</fileset>
+		</copy>
+	</target>
+	
+	<target name="build" depends="clean, init">
+		<javac srcdir="${src_directory}" destdir="${generated_directory}" debug="true" includeantruntime="false"
+			debuglevel="${debug_level}" source="${source_compiler}" target="${target_compiler}" deprecation="true">
+			<src path="${src_directory}"/>
+			<classpath refid="classpath"/>
+		</javac>
+	</target>
+	
+	<target name="create-jar" depends="build">
+		<jar destfile="${generated_directory}/${executable_name}" basedir="${generated_directory}">
+			<manifest>
+				<attribute name="Main-Class" value="fr.unicaen.info.users.hivinau_graffe.java.chat.Main"/>
+				<attribute name="Created-By" value="${author}"/>
+				<attribute name="Implementation-Title" value="${app_name}"/>
+	        	<attribute name="Implementation-Version" value="${app_version}"/>
+			</manifest>
+		</jar>
+	</target>
+
+	<target depends="create-jar" name="run">
+	    <tstamp>
+			<format property="execute_time" pattern="d MMMM yyyy hh:mm aa"
+	    	              offset="0" unit="hour" timezone="Europe/Paris"/>
+		</tstamp>
+		<echo message="Launch at: ${execute_time}"/>
+		<java jar="${generated_directory}/${executable_name}" fork="true">
+			<sysproperty key="app_name" value="${app_name}"/>
+	    </java>
+	</target>
+	
+</project>
