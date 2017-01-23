@@ -34,34 +34,26 @@ public class ServerManager {
 		return server.getLocalPort();
 	}
 
-	public void listen() {
+	public void listen() throws IOException {
 		
-		Thread process = new Thread(new Runnable() {
+		running = true;
+		
+		while(running) {
 			
-			@Override
-			public void run() {
+			try {
 				
-				running = true;
+				Socket socket = server.accept();
 				
-				while(running) {
-					
-					try {
-						
-						Socket socket = server.accept();
-						
-						ClientRunnable client = new ClientRunnable(socket);
-						
-						clients.add(client);
-						clientsExecutor.submit(client);
-						
-					} catch (IOException ignored) {}
-				}
+				ClientRunnable client = new ClientRunnable(socket);
+				
+				clients.add(client);
+				clientsExecutor.submit(client);
+				
+			} catch (IOException ignored) {
+				
+				throw ignored;
 			}
-		});
-		
-		process.setPriority(Thread.MIN_PRIORITY);
-		process.setDaemon(true);
-		process.start();
+		}
 	}
 	
 	public void stop() {
