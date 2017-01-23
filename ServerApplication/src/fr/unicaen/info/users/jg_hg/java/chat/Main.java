@@ -13,8 +13,9 @@ public class Main {
 	public static void main(String[] args) {
 		
 		try {
-			ServerManager manager = new ServerManager(8001);
-			manager.listen();
+			
+			Listener manager = new Listener(8001);
+			manager.start();
 			
 		} catch (IOException e) {
 			e.printStackTrace();
