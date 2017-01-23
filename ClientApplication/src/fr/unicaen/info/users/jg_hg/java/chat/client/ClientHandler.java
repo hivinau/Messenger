@@ -5,7 +5,7 @@ import java.util.*;
 
 public abstract class ClientHandler implements IClient {
 	
-	private final Socket socket;
+	protected final Socket socket;
 	private final Set<ClientListener> listeners;
 
 	public ClientHandler(Socket socket) {
