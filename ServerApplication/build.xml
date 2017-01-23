@@ -3,12 +3,12 @@
 	<property name="build_directory" value="bin"/>
 	<property name="src_directory" value="src"/>
 	<property name="generated_directory" value="${build_directory}/generated"/>
-	<property name="executable_name" value="distribution.jar"/>
     <property name="debug_level" value="source,lines,vars"/>
     <property name="target_compiler" value="1.8"/>
     <property name="source_compiler" value="1.8"/>
     <property name="author" value="Jesus, Hivinau"/>
     <property name="app_name" value="ServerApplication"/>
+	<property name="executable_name" value="{app_name}.jar"/>
     <property name="app_version" value="1.0.1"/>
 	
 	<path id="classpath">
