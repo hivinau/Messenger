@@ -3,7 +3,7 @@
 	<property name="build_directory" value="bin"/>
 	<property name="src_directory" value="src"/>
 	<property name="generated_directory" value="${build_directory}/generated"/>
-	<property name="executable_name" value="fr.unicaen.info.users.hivinau_graffe.java.chat.librairies.jar"/>
+	<property name="executable_name" value="fr.unicaen.info.users.jg_hg.java.chat.librairies.jar"/>
     <property name="debug_level" value="source,lines,vars"/>
     <property name="target_compiler" value="1.8"/>
     <property name="source_compiler" value="1.8"/>

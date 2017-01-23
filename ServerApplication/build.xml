@@ -43,7 +43,7 @@
 	<target name="create-jar" depends="build">
 		<jar destfile="${generated_directory}/${executable_name}" basedir="${generated_directory}">
 			<manifest>
-				<attribute name="Main-Class" value="fr.unicaen.info.users.hivinau_graffe.java.chat.Main"/>
+				<attribute name="Main-Class" value="fr.unicaen.info.users.jg_hg.java.chat.Main"/>
 				<attribute name="Created-By" value="${author}"/>
 				<attribute name="Implementation-Title" value="${app_name}"/>
 	        	<attribute name="Implementation-Version" value="${app_version}"/>
