@@ -28,22 +28,40 @@ public class ServerManager {
 		clients = new HashSet<>();
 		clientsExecutor = new ThreadPoolExecutor(ServerManager.CORE_POOL_SIZE, ServerManager.MAXIMUM_THREADS, 1000, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
 	}
+	
+	public int getPort() {
+		
+		return server.getLocalPort();
+	}
 
-	public void listen() throws IOException {
+	public void listen() {
 		
-		running = true;
+		Thread process = new Thread(new Runnable() {
+			
+			@Override
+			public void run() {
+				
+				running = true;
+				
+				while(running) {
+					
+					try {
+						
+						Socket socket = server.accept();
+						
+						ClientRunnable client = new ClientRunnable(socket);
+						
+						clients.add(client);
+						clientsExecutor.submit(client);
+						
+					} catch (IOException ignored) {}
+				}
+			}
+		});
 		
-		System.out.println("Listening on port : " + server.getLocalPort());
-		
-		while(running) {
-			
-			Socket socket = server.accept();
-			
-			ClientRunnable client = new ClientRunnable(socket);
-			
-			clients.add(client);
-			clientsExecutor.submit(client);
-		}
+		process.setPriority(Thread.MIN_PRIORITY);
+		process.setDaemon(true);
+		process.start();
 	}
 	
 	public void stop() {
