@@ -1,7 +1,7 @@
 package fr.unicaen.info.users.jg_hg.java.chat.client;
 
 import java.net.*;
-//import fr.unicaen.info.users.jg_hg.java.chat.serializable.*;
+import fr.unicaen.info.users.jg_hg.java.chat.serializable.*;
 
 public class Client extends ClientHandler {
 	
@@ -37,7 +37,6 @@ public class Client extends ClientHandler {
 		handleState(DISCONNECTED);
 	}
 
-	/*
 	@Override
 	public void send(Message message) {
 		
@@ -46,6 +45,6 @@ public class Client extends ClientHandler {
 		//...
 		
 		handleState(MESSAGE_SENDED);
-	}*/
+	}
 
 }

@@ -15,6 +15,9 @@
 		<fileset dir="${generated_directory}">
 			<include name="*.jar"/>
 		</fileset>
+		<fileset dir="dependencies/">
+			<include name="**/*.jar"/>
+		</fileset>
 		<pathelement location="${generated_directory}"/>
 	</path>
 	
