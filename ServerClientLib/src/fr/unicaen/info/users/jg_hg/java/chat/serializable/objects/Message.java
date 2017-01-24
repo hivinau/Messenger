@@ -17,7 +17,7 @@
  * Contribué par : Jesus GARNICA OLARRA, Hivinau GRAFFE
  */
 
-package fr.unicaen.info.users.jg_hg.java.chat.serializable.protocols.object;
+package fr.unicaen.info.users.jg_hg.java.chat.serializable.objects;
 
 import java.util.*;
 

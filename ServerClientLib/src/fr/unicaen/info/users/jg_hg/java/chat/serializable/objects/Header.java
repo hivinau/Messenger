@@ -17,22 +17,23 @@
  * Contribué par : Jesus GARNICA OLARRA, Hivinau GRAFFE
  */
 
-package fr.unicaen.info.users.jg_hg.java.chat.serializable.protocols;
-
-import fr.unicaen.info.users.jg_hg.java.chat.serializable.objects.*;
+package fr.unicaen.info.users.jg_hg.java.chat.serializable.objects;
 
 /**
  * 
  * @author Hivinau GRAFFE
  */
-public abstract class BasicProtocol {
+public class Header {
 
-	protected final Header header;
-	protected final Message message;
+	private final boolean broadcasting;
 	
-	public BasicProtocol(Header header, Message message) {
-
-		this.header = header;
-		this.message = message;
+	public Header(boolean broadcasting) {
+		
+		this.broadcasting = broadcasting;
+	}
+	
+	public boolean isBroadcasting() {
+		
+		return broadcasting;
 	}
 }

@@ -23,15 +23,15 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.util.concurrent.*;
-import fr.unicaen.info.users.jg_hg.java.chat.serializable.protocols.object.*;
-import fr.unicaen.info.users.jg_hg.java.chat.server.clients.*;
-import fr.unicaen.info.users.jg_hg.java.chat.server.clients.Client.*;
+import fr.unicaen.info.users.jg_hg.java.chat.client.*;
+import fr.unicaen.info.users.jg_hg.java.chat.serializable.objects.*;
+import fr.unicaen.info.users.jg_hg.java.chat.server.providers.*;
 
 /**
  * 
  * @author Hivinau GRAFFE
  */
-public class Listener implements ClientHandler {
+public class Listener implements IClientHandler {
 	
 	private static final int MAX_ASK_CONNECTION = 10;
 	
@@ -39,7 +39,7 @@ public class Listener implements ClientHandler {
 	private static final int MAXIMUM_THREADS = 8;
 	
 	private final ServerSocket server;
-	private final Set<Client> clients;
+	private final Set<ServiceProvider> serviceProviders;
 	private final ExecutorService executor; 
 	private final List<Future<?>> threads;
 	
@@ -48,7 +48,7 @@ public class Listener implements ClientHandler {
 	public Listener(int port) throws IOException {
 		
 		server = new ServerSocket(port, Listener.MAX_ASK_CONNECTION);
-		clients = new HashSet<>();
+		serviceProviders = new HashSet<>();
 		executor= new ThreadPoolExecutor(Listener.CORE_POOL_SIZE, 
 				Listener.MAXIMUM_THREADS, 
 				1000, TimeUnit.SECONDS, 
@@ -75,12 +75,12 @@ public class Listener implements ClientHandler {
 			
 			Socket socket = server.accept();
 			
-			Client client = new Client(socket);
-			client.setHandler(this);
+			ServiceProvider serviceProvider = new ServiceProvider(socket);
+			serviceProvider.registerHandler(this);
 			
-			if(clients.add(client)) {
+			if(serviceProviders.add(serviceProvider)) {
 				
-				Future<?> thread = executor.submit(client);
+				Future<?> thread = executor.submit(serviceProvider);
 				threads.add(thread);
 			}
 		}
@@ -91,8 +91,12 @@ public class Listener implements ClientHandler {
 		listening = false;
 		
 		server.close();
-		clients.clear();
-		executor.shutdownNow();
+		
+		for(ServiceProvider serviceProvider: serviceProviders) {
+			
+			serviceProvider.unregisterHandler(this);
+		}
+		serviceProviders.clear();
 		
 		for (Iterator<Future<?>> iterator = threads.iterator(); iterator.hasNext();) {
 			
@@ -105,44 +109,25 @@ public class Listener implements ClientHandler {
 			
 			iterator.remove();
 		}
+		executor.shutdownNow();
 	}
 
 	@Override
-	public void messageReceived(final Client client, final Message message) {
+	public void stateChanged(IClientHandler client, int state) {
 		
-		System.out.println(message);
+		System.out.println("state: " + state);
 	}
 
 	@Override
-	public void disconnected(final Client client) {
-		
-		System.err.println("tess");
-		
-		InetAddress serverAddress = client.getEndPoint();
-		
-		if(serverAddress != null) {
-			
-			System.out.print(serverAddress);
-			System.out.println(" disconnected");
-		}
-	}
-
-	@Override
-	public void errorOccured(final Client client, final Exception exception) {
+	public void errorOccured(IClientHandler client, Exception exception) {
 		
 		exception.printStackTrace();
 	}
 
 	@Override
-	public void connected(Client client) {
+	public void messageReceived(IClientHandler client, Message message) {
 		
-		InetAddress serverAddress = client.getEndPoint();
-		
-		if(serverAddress != null) {
-			
-			System.out.print(serverAddress);
-			System.out.println(" connected");
-		}
+		System.out.print(message.toString());
 	}
 
 }

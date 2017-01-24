@@ -17,23 +17,17 @@
  * Contribué par : Jesus GARNICA OLARRA, Hivinau GRAFFE
  */
 
-package fr.unicaen.info.users.jg_hg.java.chat.serializable.protocols.object;
+package fr.unicaen.info.users.jg_hg.java.chat.client;
+
+import fr.unicaen.info.users.jg_hg.java.chat.serializable.objects.*;
 
 /**
  * 
  * @author Hivinau GRAFFE
  */
-public class Header {
+public interface IClientHandler {
 
-	private final boolean broadcasting;
-	
-	public Header(boolean broadcasting) {
-		
-		this.broadcasting = broadcasting;
-	}
-	
-	public boolean isBroadcasting() {
-		
-		return broadcasting;
-	}
+	void stateChanged(final IClientHandler client, int state);
+	void errorOccured(final IClientHandler client, final Exception exception);
+	void messageReceived(final IClientHandler client, final Message message);
 }

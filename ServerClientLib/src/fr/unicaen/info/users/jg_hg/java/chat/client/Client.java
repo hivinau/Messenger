@@ -17,7 +17,9 @@
  * Contribué par : Jesus GARNICA OLARRA, Hivinau GRAFFE
  */
 
-package fr.unicaen.info.users.jg_hg.java.chat.serializable.protocols;
+package fr.unicaen.info.users.jg_hg.java.chat.client;
+
+import java.net.Socket;
 
 import fr.unicaen.info.users.jg_hg.java.chat.serializable.objects.*;
 
@@ -25,14 +27,34 @@ import fr.unicaen.info.users.jg_hg.java.chat.serializable.objects.*;
  * 
  * @author Hivinau GRAFFE
  */
-public abstract class BasicProtocol {
-
-	protected final Header header;
-	protected final Message message;
+public class Client extends TcpClient {
 	
-	public BasicProtocol(Header header, Message message) {
+	public static final int CONNECTING = 0;
+	public static final int CONNECTED = 1;
+	public static final int DISCONNECTING = 2;
+	public static final int DISCONNECTED = 3;
+	public static final int MESSAGE_SENDING = 4;
+	public static final int MESSAGE_SENDED = 5;
+	public static final int MESSAGE_RECEIVED = 6;
 
-		this.header = header;
-		this.message = message;
+	public Client(Header header, Socket socket) {
+		super(header, socket);
+		
 	}
+
+	public Client(Socket socket) {
+		super(socket);
+		
+	}
+
+	@Override
+	public void changeState(int state) {
+		
+	}
+
+	@Override
+	public void send(Message message) {
+		
+	}
+
 }

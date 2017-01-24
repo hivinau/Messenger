@@ -3,9 +3,6 @@ package fr.unicaen.info.users.jg_hg.java.chat.client_impl;
 import java.io.*;
 import java.net.*;
 
-import fr.unicaen.info.users.jg_hg.java.chat.client_impl.client.Client;
-import fr.unicaen.info.users.jg_hg.java.chat.client_impl.client.ClientListener;
-
 /**
  * 
  * @author Hivinau GRAFFE
@@ -13,17 +10,7 @@ import fr.unicaen.info.users.jg_hg.java.chat.client_impl.client.ClientListener;
 public class Main {
 
 	public static void main(String[] args) {
-		
-		Client client = new Client(null);
-		
-		client.addClientListener(new ClientListener() {
-			
-			@Override
-			public void stateChanged(int state) {
-				// TODO Auto-generated method stub
-			}
-		});
-		
+	
 		Socket socket = null;
 
 		try {
