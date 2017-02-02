@@ -19,6 +19,7 @@
 
 package fr.unicaen.info.users.jg_hg.java.chat.client;
 
+import java.io.IOException;
 import java.net.*;
 import java.util.*;
 
@@ -49,6 +50,16 @@ public abstract class TcpClient {
 	
 	public TcpClient(Socket socket) {
 		this(null, socket);
+		
+	}
+	
+	public TcpClient(Header header, String host, int port) throws UnknownHostException, IOException {
+		this(header, new Socket(host, port));
+		
+	}
+	
+	public TcpClient(String host, int port) throws UnknownHostException, IOException {
+		this(null, host, port);
 		
 	}
 

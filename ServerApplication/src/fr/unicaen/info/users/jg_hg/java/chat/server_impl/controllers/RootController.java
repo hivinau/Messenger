@@ -17,26 +17,27 @@
  * Contribué par : Jesus GARNICA OLARRA, Hivinau GRAFFE
  */
 
-package fr.unicaen.info.users.jg_hg.java.chat.client_impl.ui;
+package fr.unicaen.info.users.jg_hg.java.chat.server_impl.controllers;
 
 import java.awt.*;
 import javax.swing.*;
-import java.awt.event.*;
 import fr.unicaen.info.users.jg_hg.java.chat.utils.*;
-import fr.unicaen.info.users.jg_hg.java.chat.client_impl.ui.helpers.*;
+import fr.unicaen.info.users.jg_hg.java.chat.helpers.*;
 
-public class MainForm extends JFrame {
+import java.awt.event.*;
 
-	private static final long serialVersionUID = 10001L;
+public class RootController extends JFrame {
+	
+	private static final long serialVersionUID = 1002L;
 	
 	private WindowAdapter windowAdapter = new WindowAdapter() {
 		
 		@Override
 		public void windowClosing(WindowEvent e) {
 			
-			Log.i(MainForm.class.getName(), "windowClosing called");
+			Log.i(RootController.class.getName(), "windowClosing called");
 			
-			Resources resource = Resources.getInstance();
+			Resource resource = Resource.getInstance();
 			
 			final String title = resource.getString("close_app__title");
 			final String message = resource.getString("close_app__message");
@@ -47,19 +48,18 @@ public class MainForm extends JFrame {
 				
 				try {
 					
-					Log.i(MainForm.class.getName(), "application will be closed");
-
+					Log.i(RootController.class.getName(), "application will be closed");
 					System.exit(0);
 					
-				} catch(SecurityException ex) {
+				} catch(Exception exception) {
 					
-					Log.e(MainForm.class.getName(), ex.getMessage());
+					Log.e(RootController.class.getName(), exception.getMessage());
 				}
 			}
 		}
 	};
 
-	public MainForm(String title) {
+	public RootController(String title) {
 		super(title);
 		
 		initComponents();

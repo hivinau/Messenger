@@ -19,7 +19,10 @@
 
 package fr.unicaen.info.users.jg_hg.java.chat.client;
 
+import java.io.IOException;
 import java.net.Socket;
+import java.net.UnknownHostException;
+
 import fr.unicaen.info.users.jg_hg.java.chat.serializable.objects.*;
 
 /**
@@ -45,6 +48,14 @@ public class Client extends TcpClient {
 		super(socket);
 		
 	}
+	
+	public Client(Header header, String host, int port) throws UnknownHostException, IOException {
+		super(header, host, port);
+	}
+	
+	public Client(String host, int port) throws UnknownHostException, IOException {
+		super(host, port);
+	}
 
 	@Override
 	public void changeState(int state) {
@@ -54,6 +65,14 @@ public class Client extends TcpClient {
 	@Override
 	public void send(Message message) {
 		
+	}
+	
+	public void close() throws IOException {
+		
+		if(socket != null) {
+			
+			socket.close();
+		}
 	}
 
 }

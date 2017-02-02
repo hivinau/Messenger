@@ -17,17 +17,21 @@
  * Contribué par : Jesus GARNICA OLARRA, Hivinau GRAFFE
  */
 
-package fr.unicaen.info.users.jg_hg.java.chat.client_impl.ui.helpers;
+package fr.unicaen.info.users.jg_hg.java.chat.helpers;
 
-import fr.unicaen.info.users.jg_hg.java.chat.client_impl.files.*;
+import fr.unicaen.info.users.jg_hg.java.chat.helpers.resources.*;
 
-public class Resources {
+/**
+ * 
+ * @author Hivinau GRAFFE
+ */
+public class Resource {
 
-	private static Resources instance = null;
+	private static Resource instance = null;
 	private static final String STRINGS_FILE = "res/strings.xml";
 	private static final String INTEGERS_FILE = "res/integers.xml";
 	
-	private Resources() {
+	private Resource() {
 		
 	}
 	
@@ -35,11 +39,11 @@ public class Resources {
 	 * Récupère un singleton de cette classe.
 	 * @return {@link lifegame.librairies.utils.Resources}.
 	 */
-	public static Resources getInstance() {
+	public static Resource getInstance() {
 		
 		if(instance == null) {
 			
-			instance = new Resources();
+			instance = new Resource();
 		}
 		
 		return instance;
@@ -65,7 +69,7 @@ public class Resources {
 		
 		try {
 			
-			XmlReader reader = new XmlReader(Resources.STRINGS_FILE);
+			XmlReader reader = new XmlReader(Resource.STRINGS_FILE);
 			
 			result = reader.value(id);
 			
@@ -88,7 +92,7 @@ public class Resources {
 		
 		try {
 			
-			XmlReader reader = new XmlReader(Resources.INTEGERS_FILE);
+			XmlReader reader = new XmlReader(Resource.INTEGERS_FILE);
 			
 			result = Integer.parseInt(reader.value(id));
 			

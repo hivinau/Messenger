@@ -1,8 +1,8 @@
 package fr.unicaen.info.users.jg_hg.java.chat.client_impl;
 
-import fr.unicaen.info.users.jg_hg.java.chat.client_impl.ui.*;
-import fr.unicaen.info.users.jg_hg.java.chat.client_impl.ui.helpers.*;
-import fr.unicaen.info.users.jg_hg.java.chat.utils.Log;
+import fr.unicaen.info.users.jg_hg.java.chat.utils.*;
+import fr.unicaen.info.users.jg_hg.java.chat.client_impl.controllers.*;
+import fr.unicaen.info.users.jg_hg.java.chat.helpers.*;
 
 /**
  * 
@@ -17,10 +17,10 @@ public class Main {
 			@Override
 			public void run() {
 				
-				String title = Resources.getInstance().getString("app__name");
+				String title = Resource.getInstance().getString("app__name");
 				
-				MainForm mainForm = new MainForm(title);
-				mainForm.setVisible(true);
+				RootController rootController = new RootController(title);
+				rootController.setVisible(true);
 				
 				Log.i(Main.class.getName(), title + " is launched");
 			}

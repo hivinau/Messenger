@@ -21,6 +21,10 @@ package fr.unicaen.info.users.jg_hg.java.chat.utils;
 
 import java.util.*;
 
+/**
+ * 
+ * @author Hivinau GRAFFE
+ */
 public class Log {
 	
 	public static void i(String tag, String message) {

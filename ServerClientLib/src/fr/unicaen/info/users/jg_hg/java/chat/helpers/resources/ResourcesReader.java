@@ -17,18 +17,25 @@
  * Contribué par : Jesus GARNICA OLARRA, Hivinau GRAFFE
  */
 
-package fr.unicaen.info.users.jg_hg.java.chat.client;
+package fr.unicaen.info.users.jg_hg.java.chat.helpers.resources;
 
-import fr.unicaen.info.users.jg_hg.java.chat.serializable.objects.*;
+import java.util.*;
+import javax.xml.parsers.*;
 
 /**
  * 
  * @author Hivinau GRAFFE
  */
-public interface IClientHandler {
+public abstract class ResourcesReader {
 
+	protected final DocumentBuilder builder;
 	
-	void stateChanged(final IClientHandler client, int state);
-	void errorOccured(final IClientHandler client, final Exception exception);
-	void messageReceived(final IClientHandler client, final Message message);
+	public ResourcesReader() throws FactoryConfigurationError, ParserConfigurationException {
+		
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		builder = factory.newDocumentBuilder();
+	}
+	
+	public abstract Map<String, Object> configuration();
+	public abstract String value(String attribute);
 }

@@ -17,21 +17,19 @@
  * Contribué par : Jesus GARNICA OLARRA, Hivinau GRAFFE
  */
 
-package fr.unicaen.info.users.jg_hg.java.chat.client_impl.files;
+package fr.unicaen.info.users.jg_hg.java.chat.helpers;
 
-import java.util.*;
-import javax.xml.parsers.*;
+import javax.swing.SwingUtilities;
 
-public abstract class ResourcesReader {
+/**
+ * 
+ * @author Hivinau GRAFFE
+ */
+public class UIThread {
 
-	protected final DocumentBuilder builder;
-	
-	public ResourcesReader() throws FactoryConfigurationError, ParserConfigurationException {
+	public static void run(Runnable runnable) {
 		
-		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-		builder = factory.newDocumentBuilder();
+		SwingUtilities.invokeLater(runnable);
 	}
-	
-	public abstract Map<String, Object> configuration();
-	public abstract String value(String attribute);
 }
+
