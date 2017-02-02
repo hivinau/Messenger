@@ -1,7 +1,8 @@
 package fr.unicaen.info.users.jg_hg.java.chat.client_impl;
 
-import java.io.*;
-import java.net.*;
+import fr.unicaen.info.users.jg_hg.java.chat.client_impl.ui.*;
+import fr.unicaen.info.users.jg_hg.java.chat.client_impl.ui.helpers.*;
+import fr.unicaen.info.users.jg_hg.java.chat.utils.Log;
 
 /**
  * 
@@ -10,6 +11,22 @@ import java.net.*;
 public class Main {
 
 	public static void main(String[] args) {
+		
+		UIThread.run(new Runnable() {
+			
+			@Override
+			public void run() {
+				
+				String title = Resources.getInstance().getString("app__name");
+				
+				MainForm mainForm = new MainForm(title);
+				mainForm.setVisible(true);
+				
+				Log.i(Main.class.getName(), title + " is launched");
+			}
+		});
+		
+		/*
 	
 		Socket socket = null;
 
@@ -32,6 +49,8 @@ public class Main {
 				} catch (Exception ignored) {}
 			 }
 		}
+		
+		*/
 	}
 
 }

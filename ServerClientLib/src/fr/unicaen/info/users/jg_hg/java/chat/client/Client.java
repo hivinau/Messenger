@@ -20,7 +20,6 @@
 package fr.unicaen.info.users.jg_hg.java.chat.client;
 
 import java.net.Socket;
-
 import fr.unicaen.info.users.jg_hg.java.chat.serializable.objects.*;
 
 /**
