@@ -4,4 +4,7 @@
 	<string name="app__name">Messenger Server</string>
 	<string name="close_app__title">Confirmation de fermeture</string>
 	<string name="close_app__message">Voulez-vous vraiment quitter l'application ?</string>
+	
+	<string name="host_port">Port d'écoute:</string>
+	<string name="host_state">activer</string>
 </resources>

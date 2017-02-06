@@ -98,6 +98,7 @@ public abstract class TcpClient {
 		
 		return header;
 	}
+	
 	public void addHandler(IClientHandler handler) {
 
 		if(!handlers.contains(handler)) {

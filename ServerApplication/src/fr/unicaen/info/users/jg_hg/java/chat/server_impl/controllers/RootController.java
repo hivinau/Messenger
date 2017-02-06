@@ -21,14 +21,22 @@ package fr.unicaen.info.users.jg_hg.java.chat.server_impl.controllers;
 
 import java.awt.*;
 import javax.swing.*;
-import fr.unicaen.info.users.jg_hg.java.chat.utils.*;
-import fr.unicaen.info.users.jg_hg.java.chat.helpers.*;
-
 import java.awt.event.*;
+import fr.unicaen.info.users.jg_hg.java.chat.utils.*;
+import fr.unicaen.info.users.jg_hg.java.chat.server.*;
+import fr.unicaen.info.users.jg_hg.java.chat.helpers.*;
+import fr.unicaen.info.users.jg_hg.java.chat.server_impl.views.*;
+import fr.unicaen.info.users.jg_hg.java.chat.server_impl.views.SettingsView.*;
 
-public class RootController extends JFrame {
+/**
+ * 
+ * @author Jesus GARNICA OLARRA
+ */
+@SuppressWarnings("serial")
+public class RootController extends JFrame implements SettingsViewListener {
 	
-	private static final long serialVersionUID = 1002L;
+	private SettingsView settingsView = null;
+	private Listener manager = null;
 	
 	private WindowAdapter windowAdapter = new WindowAdapter() {
 		
@@ -62,20 +70,53 @@ public class RootController extends JFrame {
 	public RootController(String title) {
 		super(title);
 		
-		initComponents();
-	}
-	
-	private void initComponents() {
-		
-		setMinimumSize(new Dimension(400, 400));
+		setPreferredSize(new Dimension(400, 400));
+		setResizable(false);
 		setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-		setLocationRelativeTo(null);
 		
 		Container container = getContentPane();
 		container.setLayout(new BorderLayout());
 		
+		settingsView = new SettingsView();
+		settingsView.addSettingsViewListener(this);
+		
+		container.add(settingsView);
+		
 		addWindowListener(windowAdapter);
 		
 		pack();
+		setLocationByPlatform(true);
+	}
+
+	@Override
+	public void stateChanged(final SettingsView view, final boolean state) {
+		
+		Log.i(RootController.class.getName(), "stateChanged called: state = " + (state ? "true" : "false"));
+		
+		try {
+			
+			if(state) {
+				
+				int port = view.getPort();
+				
+				manager = new Listener(port);
+				manager.start();
+				
+				Log.i(RootController.class.getName(), "Host started on port " + port);
+			} else {
+				
+				Log.i(RootController.class.getName(), "Host stopped");
+				
+				if(manager != null) {
+					
+					manager.stop();
+					manager = null;
+				}
+			}
+			
+		} catch (Exception exception) {
+			
+			Log.e(RootController.class.getName(), exception.getMessage());
+		}
 	}
 }

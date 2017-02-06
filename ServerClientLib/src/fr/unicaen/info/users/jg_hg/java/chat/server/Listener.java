@@ -23,9 +23,10 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.util.concurrent.*;
+import fr.unicaen.info.users.jg_hg.java.chat.utils.*;
 import fr.unicaen.info.users.jg_hg.java.chat.client.*;
-import fr.unicaen.info.users.jg_hg.java.chat.serializable.objects.*;
 import fr.unicaen.info.users.jg_hg.java.chat.server.providers.*;
+import fr.unicaen.info.users.jg_hg.java.chat.serializable.objects.*;
 
 /**
  * 
@@ -55,6 +56,7 @@ public class Listener implements IClientHandler {
 				new LinkedBlockingQueue<Runnable>());
 		threads = new ArrayList<>();
 		
+		listening = false;
 	}
 	
 	public void setTimeout(int timeout) throws SocketException {
@@ -62,28 +64,47 @@ public class Listener implements IClientHandler {
 		server.setSoTimeout(timeout);
 	}
 	
-	public void start() throws IOException {
+	public void start() {
 		
 		if(listening) {
 			
 			return;
 		}
 		
-		listening = true;
-		
-		while(!server.isClosed()) {
+		Thread background = new Thread(new Runnable() {
 			
-			Socket socket = server.accept();
-			
-			ServiceProvider serviceProvider = new ServiceProvider(socket);
-			serviceProvider.registerHandler(this);
-			
-			if(serviceProviders.add(serviceProvider)) {
+			@Override
+			public void run() {
 				
-				Future<?> thread = executor.submit(serviceProvider);
-				threads.add(thread);
+				listening = true;
+				
+				while(!server.isClosed()) {
+					
+					try {
+						
+						Socket socket = server.accept();
+						
+						ServiceProvider serviceProvider = new ServiceProvider(socket);
+						serviceProvider.registerHandler(Listener.this);
+						
+						if(serviceProviders.add(serviceProvider)) {
+							
+							Future<?> thread = executor.submit(serviceProvider);
+							threads.add(thread);
+						}
+						
+					} catch(Exception exception) {
+						
+						Log.e(Listener.class.getName(), exception.getMessage());
+					}
+				}
 			}
-		}
+		});
+		
+		background.setDaemon(true);
+		background.setPriority(Thread.MIN_PRIORITY);
+		background.setName(Listener.class.getName());
+		background.start();
 	}
 	
 	public void stop() throws IOException {
@@ -111,23 +132,30 @@ public class Listener implements IClientHandler {
 		}
 		executor.shutdownNow();
 	}
-
-	@Override
-	public void stateChanged(IClientHandler client, int state) {
+	
+	public boolean isListening() {
 		
-		System.out.println("state: " + state);
+		return listening;
 	}
 
 	@Override
-	public void errorOccured(IClientHandler client, Exception exception) {
+	public void stateChanged(TcpClient client, int state) {
 		
-		exception.printStackTrace();
+		Log.i(Listener.class.getName(), "state: " + state);
+		
+		
 	}
 
 	@Override
-	public void messageReceived(IClientHandler client, Message message) {
+	public void errorOccured(TcpClient client, Exception exception) {
 		
-		System.out.print(message.toString());
+		Log.e(Listener.class.getName(), exception.getMessage());
+	}
+
+	@Override
+	public void messageReceived(TcpClient client, Message message) {
+		
+		Log.i(Listener.class.getName(), message.toString());
 	}
 
 }

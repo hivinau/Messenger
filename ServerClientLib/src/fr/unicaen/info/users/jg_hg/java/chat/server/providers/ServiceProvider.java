@@ -102,10 +102,12 @@ public class ServiceProvider implements Runnable {
 	            	line = reader.readLine();
 	            	
 	            } while(line != null);
-				
-				final Message message = new Message("test", content);
-				client.handleMessage(message);
-				
+	            
+	            if(content.length() > 0) {
+					
+					final Message message = new Message("test", content);
+					client.handleMessage(message);
+	            }
 
 			} catch(Exception exception) {
 
@@ -130,5 +132,10 @@ public class ServiceProvider implements Runnable {
 		client.handleState(Client.DISCONNECTED);
 	}
 
-	
+	public void sendMessage(String message) throws IOException {
+		
+		BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(client.getSocket().getOutputStream()));
+		writer.write(message);
+		writer.flush();
+	}
 }

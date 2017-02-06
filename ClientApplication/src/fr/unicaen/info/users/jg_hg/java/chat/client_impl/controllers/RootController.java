@@ -22,12 +22,25 @@ package fr.unicaen.info.users.jg_hg.java.chat.client_impl.controllers;
 import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
+import java.io.IOException;
+
 import fr.unicaen.info.users.jg_hg.java.chat.utils.*;
+import fr.unicaen.info.users.jg_hg.java.chat.client.*;
 import fr.unicaen.info.users.jg_hg.java.chat.helpers.*;
+import fr.unicaen.info.users.jg_hg.java.chat.client_impl.views.*;
+import fr.unicaen.info.users.jg_hg.java.chat.client_impl.views.FriendsView.*;
 
-public class RootController extends JFrame {
-
-	private static final long serialVersionUID = 10001L;
+/**
+ * 
+ * @author Jesus GARNICA OLARRA
+ */
+@SuppressWarnings("serial")
+public class RootController extends JFrame implements FriendsViewListener {
+	
+	private final SettingsController settingsController;
+	private FriendsView friendsView = null;
+	private JPanel rightPanel = null;
+	private Client client = null;
 	
 	private WindowAdapter windowAdapter = new WindowAdapter() {
 		
@@ -61,20 +74,63 @@ public class RootController extends JFrame {
 	public RootController(String title) {
 		super(title);
 		
-		initComponents();
-	}
-	
-	private void initComponents() {
-		
 		setMinimumSize(new Dimension(400, 400));
 		setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-		setLocationRelativeTo(null);
 		
 		Container container = getContentPane();
 		container.setLayout(new BorderLayout());
 		
+		JSplitPane split = new JSplitPane();
+        split.setResizeWeight(.5);
+        split.setDividerSize(2);
+        
+        friendsView = new FriendsView();
+        friendsView.addFriendsViewListener(this);
+        friendsView.addSelf(Resource.getInstance().getString("self"), Color.RED);
+        split.setLeftComponent(friendsView);
+        
+        rightPanel = new JPanel();
+        split.setRightComponent(rightPanel);
+        
+        container.add(split);
+		
 		addWindowListener(windowAdapter);
 		
+		settingsController = new SettingsController(RootController.this, "test");
+		
 		pack();
+		setLocationByPlatform(true);
+		setLocationRelativeTo(null);
+	}
+
+	@Override
+	public void stateChanged(FriendsView view, boolean state) {
+		
+		if(state) {
+			
+			settingsController.setVisible(true);
+		}
+		
+		/*
+		
+		try {
+			
+			if(state) {
+				
+				client = new Client("localhost", 8001);
+			} else {
+				
+				if(client != null) {
+					
+					client.close();
+				}
+			}
+			
+		} catch (IOException exception) {
+			
+			Log.e(RootController.class.getName(), exception.getMessage());
+		}
+		
+		*/
 	}
 }

@@ -1,5 +1,6 @@
 package fr.unicaen.info.users.jg_hg.java.chat.server_impl;
 
+import javax.swing.*;
 import fr.unicaen.info.users.jg_hg.java.chat.utils.*;
 import fr.unicaen.info.users.jg_hg.java.chat.helpers.*;
 import fr.unicaen.info.users.jg_hg.java.chat.server_impl.controllers.*;
@@ -12,6 +13,14 @@ public class Main {
 
 	public static void main(String[] args) {
 		
+		try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (ClassNotFoundException | InstantiationException
+               | IllegalAccessException | UnsupportedLookAndFeelException exception) {
+            
+        	Log.e(Main.class.getName(), exception.getMessage());
+        }
+		
 		UIThread.run(new Runnable() {
 			
 			@Override
@@ -22,21 +31,8 @@ public class Main {
 				RootController rootController = new RootController(title);
 				rootController.setVisible(true);
 				
-				Log.i(Main.class.getName(), title + " is launched");
+				Log.i(Main.class.getName(), title + " launched");
 			}
 		});
-		
-		/*
-		
-		try {
-			
-			Listener manager = new Listener(PORT);
-			manager.start();
-			
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
-		*/
 	}
 }

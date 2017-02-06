@@ -4,4 +4,12 @@
 	<string name="app__name">Messenger Client</string>
 	<string name="close_app__title">Confirmation de fermeture</string>
 	<string name="close_app__message">Voulez-vous vraiment quitter l'application ?</string>
+	
+	<string name="self">Moi</string>
+	
+	<string name="name">Surnom: </string>
+	<string name="hostname">Hôte: (IP) </string>
+	<string name="hostport">: (PORT)</string>
+	<string name="cancel">Annuler</string>
+	<string name="login">Se connecter</string>
 </resources>

@@ -28,7 +28,7 @@ import fr.unicaen.info.users.jg_hg.java.chat.serializable.objects.*;
 public interface IClientHandler {
 
 	
-	void stateChanged(final IClientHandler client, int state);
-	void errorOccured(final IClientHandler client, final Exception exception);
-	void messageReceived(final IClientHandler client, final Message message);
+	void stateChanged(final TcpClient client, int state);
+	void errorOccured(final TcpClient client, final Exception exception);
+	void messageReceived(final TcpClient client, final Message message);
 }
