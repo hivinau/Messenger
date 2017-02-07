@@ -30,13 +30,13 @@ import fr.unicaen.info.users.jg_hg.java.chat.client_impl.views.FriendsView.*;
  * @author Jesus GARNICA OLARRA
  */
 @SuppressWarnings("serial")
-public class SelectableChatController extends JPanel implements FriendsViewListener {
+public class PrivateChatController extends JPanel implements FriendsViewListener {
 
 	private final RootController rootController;
 	private final FriendsView friendsView;
 	private final JPanel rightPanel;
 	
-	public SelectableChatController(RootController rootController) {
+	public PrivateChatController(RootController rootController) {
 		super(new GridLayout(1, 1));
 		
 		this.rootController = rootController;

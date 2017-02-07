@@ -76,7 +76,7 @@ public class RootController extends Blurable implements SettingsControllerListen
 		container.setLayout(new BorderLayout());
 		
         JTabbedPane tab = new JTabbedPane();
-        tab.addTab(Resource.getInstance().getString("private_section"), new SelectableChatController(this));
+        tab.addTab(Resource.getInstance().getString("private_section"), new PrivateChatController(this));
         tab.addTab(Resource.getInstance().getString("public_section"), new JScrollPane(new JTree()));
         
         container.add(tab);
