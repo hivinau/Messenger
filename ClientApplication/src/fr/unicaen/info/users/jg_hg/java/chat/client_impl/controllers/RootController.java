@@ -22,25 +22,19 @@ package fr.unicaen.info.users.jg_hg.java.chat.client_impl.controllers;
 import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
-import java.io.IOException;
-
 import fr.unicaen.info.users.jg_hg.java.chat.utils.*;
-import fr.unicaen.info.users.jg_hg.java.chat.client.*;
 import fr.unicaen.info.users.jg_hg.java.chat.helpers.*;
-import fr.unicaen.info.users.jg_hg.java.chat.client_impl.views.*;
-import fr.unicaen.info.users.jg_hg.java.chat.client_impl.views.FriendsView.*;
+import fr.unicaen.info.users.jg_hg.java.chat.utils.ui.*;
+import fr.unicaen.info.users.jg_hg.java.chat.client_impl.controllers.SettingsController.*;
 
 /**
  * 
  * @author Jesus GARNICA OLARRA
  */
 @SuppressWarnings("serial")
-public class RootController extends JFrame implements FriendsViewListener {
-	
+public class RootController extends Blurable implements SettingsControllerListener {
+
 	private final SettingsController settingsController;
-	private FriendsView friendsView = null;
-	private JPanel rightPanel = null;
-	private Client client = null;
 	
 	private WindowAdapter windowAdapter = new WindowAdapter() {
 		
@@ -54,7 +48,7 @@ public class RootController extends JFrame implements FriendsViewListener {
 			final String title = resource.getString("close_app__title");
 			final String message = resource.getString("close_app__message");
 			
-			int canClose = JOptionPane.showConfirmDialog(null, message, title, JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+			int canClose = JOptionPane.showConfirmDialog(RootController.this, message, title, JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
 			
 			if(canClose == JOptionPane.YES_OPTION) {
 				
@@ -69,68 +63,41 @@ public class RootController extends JFrame implements FriendsViewListener {
 				}
 			}
 		}
+		
 	};
 
 	public RootController(String title) {
 		super(title);
 		
-		setMinimumSize(new Dimension(400, 400));
+		setMinimumSize(new Dimension(600, 400));
 		setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		
 		Container container = getContentPane();
 		container.setLayout(new BorderLayout());
 		
-		JSplitPane split = new JSplitPane();
-        split.setResizeWeight(.5);
-        split.setDividerSize(2);
+        JTabbedPane tab = new JTabbedPane();
+        tab.addTab(Resource.getInstance().getString("private_section"), new SelectableChatController(this));
+        tab.addTab(Resource.getInstance().getString("public_section"), new JScrollPane(new JTree()));
         
-        friendsView = new FriendsView();
-        friendsView.addFriendsViewListener(this);
-        friendsView.addSelf(Resource.getInstance().getString("self"), Color.RED);
-        split.setLeftComponent(friendsView);
-        
-        rightPanel = new JPanel();
-        split.setRightComponent(rightPanel);
-        
-        container.add(split);
+        container.add(tab);
+		
+		settingsController = new SettingsController(this, Resource.getInstance().getString("settings"));
+		settingsController.addSettingsControllerListener(this);
 		
 		addWindowListener(windowAdapter);
 		
-		settingsController = new SettingsController(RootController.this, "test");
-		
 		pack();
-		setLocationByPlatform(true);
 		setLocationRelativeTo(null);
 	}
-
+	
+	public void showSettings() {
+		
+		settingsController.setVisible(true);
+	}
+	
 	@Override
-	public void stateChanged(FriendsView view, boolean state) {
+	public void visibilityChanged(SettingsController controller, boolean shown) {
 		
-		if(state) {
-			
-			settingsController.setVisible(true);
-		}
-		
-		/*
-		
-		try {
-			
-			if(state) {
-				
-				client = new Client("localhost", 8001);
-			} else {
-				
-				if(client != null) {
-					
-					client.close();
-				}
-			}
-			
-		} catch (IOException exception) {
-			
-			Log.e(RootController.class.getName(), exception.getMessage());
-		}
-		
-		*/
+		setEnabled(!shown); //(un)blur frame while settings are shown
 	}
 }

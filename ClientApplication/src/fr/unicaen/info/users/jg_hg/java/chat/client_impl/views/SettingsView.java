@@ -23,6 +23,7 @@ import java.util.*;
 import javax.swing.*;
 import java.awt.event.*;
 import fr.unicaen.info.users.jg_hg.java.chat.helpers.*;
+import fr.unicaen.info.users.jg_hg.java.chat.utils.ui.*;
 import fr.unicaen.info.users.jg_hg.java.chat.utils.validators.*;
 
 /**
@@ -89,6 +90,7 @@ public class SettingsView extends JPanel implements ActionListener {
 
 		nameLabel = new JLabel(Resource.getInstance().getString("name"));
 		nameTextField = new JTextField();
+		nameTextField.setUI(new HintTextFieldUI(Resource.getInstance().getString("name_hint")));
 		
 		add(nameLabel);
 		add(nameTextField);
@@ -103,8 +105,10 @@ public class SettingsView extends JPanel implements ActionListener {
 		
 		hostLabel = new JLabel(Resource.getInstance().getString("hostname"));
 		hostTextField = new JTextField();
+		hostTextField.setUI(new HintTextFieldUI(Resource.getInstance().getString("hostname_hint")));
 		portLabel = new JLabel(Resource.getInstance().getString("hostport"));
 		portTextField = new JTextField(SettingsView.PORT_LENGTH);
+		portTextField.setUI(new HintTextFieldUI(Resource.getInstance().getString("hostport_hint")));
 		
 		add(hostLabel);
 		add(hostTextField);
@@ -172,8 +176,11 @@ public class SettingsView extends JPanel implements ActionListener {
 	}
 
 	public void setHostport(int port) {
+		
+		if(port >= 0) {
 
-		portTextField.setText(String.format(Locale.FRANCE, "%d", port));
+			portTextField.setText(String.format(Locale.FRANCE, "%d", port));
+		}
 	}
 
 	public int getHostPort() throws NumberFormatException {

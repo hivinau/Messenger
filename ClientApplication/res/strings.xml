@@ -5,11 +5,18 @@
 	<string name="close_app__title">Confirmation de fermeture</string>
 	<string name="close_app__message">Voulez-vous vraiment quitter l'application ?</string>
 	
+	<string name="private_section">Chat privée</string>
+	<string name="public_section">Chat public</string>
+	
 	<string name="self">Moi</string>
 	
+	<string name="settings">Réglages</string>
 	<string name="name">Surnom: </string>
-	<string name="hostname">Hôte: (IP) </string>
-	<string name="hostport">: (PORT)</string>
+	<string name="name_hint">Surnom</string>
+	<string name="hostname">Hôte:</string>
+	<string name="hostname_hint">Adresse IPv4</string>
+	<string name="hostport">:</string>
+	<string name="hostport_hint">Port</string>
 	<string name="cancel">Annuler</string>
 	<string name="login">Se connecter</string>
 </resources>

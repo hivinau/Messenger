@@ -22,7 +22,6 @@ package fr.unicaen.info.users.jg_hg.java.chat.client_impl.views;
 import java.awt.*;
 import java.util.*;
 import javax.swing.*;
-
 import java.awt.event.*;
 
 /**
@@ -34,7 +33,7 @@ public class FriendsView extends JPanel {
 	
 	public interface FriendsViewListener {
 		
-		void stateChanged(final FriendsView view, final boolean state);
+		void componentChanged(final FriendsView view, final Component component);
 	}
 
     private final Box box;
@@ -47,14 +46,7 @@ public class FriendsView extends JPanel {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			
-			Object object = e.getSource();
-			
-			if(object instanceof JToggleButton) {
-				
-				JToggleButton button = (JToggleButton) object;
-				
-				handleState(button.isSelected());
-			}
+			handleComponent((Component) e.getSource());
 		}
 	};
 	
@@ -64,7 +56,7 @@ public class FriendsView extends JPanel {
 		glue = Box.createVerticalGlue();
 		
 		box = Box.createVerticalBox();
-		box.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
+		box.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
 		
 		JScrollPane scroll = new JScrollPane(box);
         scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
@@ -171,11 +163,11 @@ public class FriendsView extends JPanel {
 		});
     } 
 	
-	private void handleState(final boolean state) {
+	private void handleComponent(final Component component) {
 		
 		for(FriendsViewListener listener: listeners) {
 			
-			listener.stateChanged(this, state);
+			listener.componentChanged(this, component);
 		}
 	}
 }

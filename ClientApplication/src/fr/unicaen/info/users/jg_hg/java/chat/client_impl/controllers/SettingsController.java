@@ -23,6 +23,7 @@ import java.awt.*;
 import java.util.*;
 import java.beans.*;
 import javax.swing.*;
+import java.awt.event.*;
 import java.util.prefs.*;
 import javax.swing.SwingWorker.*;
 import fr.unicaen.info.users.jg_hg.java.chat.utils.*;
@@ -37,7 +38,30 @@ import fr.unicaen.info.users.jg_hg.java.chat.client_impl.views.SettingsView.*;
 @SuppressWarnings("serial")
 public class SettingsController extends JDialog implements SettingsViewListener, PropertyChangeListener {
 	
+	public interface SettingsControllerListener {
+		
+		void visibilityChanged(SettingsController controller, boolean shown);
+	}
+	
 	private SettingsView settingsView = null;
+
+	private final Set<SettingsControllerListener> listeners;
+	
+	private ComponentAdapter componentAdapter = new ComponentAdapter() {
+		
+		public void componentShown(ComponentEvent e) {
+			
+			handleState(true);
+			
+			Log.i(SettingsController.class.getName(), "Fill fields with stored properties");
+			
+			Preferences preferences = Preferences.userRoot();
+	        
+	        settingsView.setUsername(preferences.get(Application.USERNAME, null));
+	        settingsView.setHostname(preferences.get(Application.HOSTNAME, null));
+	        settingsView.setHostport(preferences.getInt(Application.HOSTPORT, -1));
+		}
+	};
 
 	public SettingsController(Frame frame, String title) {
 		super(frame, Dialog.ModalityType.APPLICATION_MODAL);
@@ -53,15 +77,23 @@ public class SettingsController extends JDialog implements SettingsViewListener,
 		settingsView.addSettingsViewListener(this);
         
         container.add(settingsView);
-       
-        Preferences preferences = Preferences.userRoot();
-        
-        settingsView.setUsername(preferences.get(Application.USERNAME, null));
-        settingsView.setHostname(preferences.get(Application.HOSTNAME, null));
-        settingsView.setHostport(preferences.getInt(Application.HOSTPORT, 5000));
+		
+		addComponentListener(componentAdapter);
         
 		pack();
 		setLocationRelativeTo(frame);
+
+		listeners = new HashSet<>();
+	}
+
+	public void addSettingsControllerListener(SettingsControllerListener listener) {
+
+		listeners.add(listener);
+	}
+
+	public void removeSettingsControllerListener(SettingsControllerListener listener) {
+
+		listeners.remove(listener);
 	}
 
 	@Override
@@ -88,6 +120,7 @@ public class SettingsController extends JDialog implements SettingsViewListener,
 		Log.i(SettingsController.class.getName(), "onCancelled called");
 		
 		setVisible(false);
+		handleState(false);
 	}
 
 	@Override
@@ -109,6 +142,14 @@ public class SettingsController extends JDialog implements SettingsViewListener,
 				default:
 					break;
 			}
+		}
+	}
+
+	private void handleState(boolean shown) {
+
+		for(SettingsControllerListener listener: listeners) {
+
+			listener.visibilityChanged(this, shown);
 		}
 	}
 }
