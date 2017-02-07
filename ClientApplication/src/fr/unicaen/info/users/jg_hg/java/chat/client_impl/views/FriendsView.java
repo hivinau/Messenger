@@ -23,6 +23,7 @@ import java.awt.*;
 import java.util.*;
 import javax.swing.*;
 import java.awt.event.*;
+import fr.unicaen.info.users.jg_hg.java.chat.helpers.*;
 
 /**
  * 
@@ -153,7 +154,7 @@ public class FriendsView extends JPanel {
         box.add(glue);
         box.revalidate();
         
-        EventQueue.invokeLater(new Runnable() {
+        UIThread.run(new Runnable() {
 			
 			@Override
 			public void run() {
