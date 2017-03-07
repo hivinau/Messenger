@@ -31,7 +31,6 @@ import implementation.controllers.*;
 @Developer(name="Jesus GARNICA OLARRA")
 @SuppressWarnings("serial")
 public class Application extends JFrame {
-
 	
 	private WindowAdapter windowAdapter = new WindowAdapter() {
 		
@@ -81,5 +80,32 @@ public class Application extends JFrame {
 		
 		pack();
 		setLocationByPlatform(true);
+	}
+
+	public static void main(String[] args) {
+		
+		try {
+			
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            
+        } catch (ClassNotFoundException | InstantiationException
+               | IllegalAccessException | UnsupportedLookAndFeelException exception) {
+            
+        	Log.e(Application.class.getName(), exception.getMessage());
+        }
+		
+		UIThread.run(new Runnable() {
+			
+			@Override
+			public void run() {
+				
+				String title = Resource.getInstance().getString("app__name");
+				
+				Application application = new Application(title);
+				application.setVisible(true);
+				
+				Log.i(Application.class.getName(), title + " launched");
+			}
+		}); 
 	}
 }
