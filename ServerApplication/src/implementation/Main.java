@@ -4,7 +4,6 @@ import utils.*;
 import helpers.*;
 import javax.swing.*;
 import common.annotations.*;
-import implementation.controllers.*;
 
 @Developer(name="Jesus GARNICA OLARRA")
 public class Main {
@@ -26,8 +25,8 @@ public class Main {
 				
 				String title = Resource.getInstance().getString("app__name");
 				
-				RootController rootController = new RootController(title);
-				rootController.setVisible(true);
+				Application application = new Application(title);
+				application.setVisible(true);
 				
 				Log.i(Main.class.getName(), title + " launched");
 			}
