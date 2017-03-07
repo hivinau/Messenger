@@ -32,12 +32,14 @@ import implementation.controllers.*;
 @SuppressWarnings("serial")
 public class Application extends JFrame {
 	
+	private final ServerController serverController;
+	
 	private WindowAdapter windowAdapter = new WindowAdapter() {
 		
 		@Override
 		public void windowClosing(WindowEvent e) {
 			
-			Log.i(Application.class.getName(), "windowClosing called");
+			Log.i(Application.class.getName(), "Window is in the process of being closed");
 			
 			Resource resource = Resource.getInstance();
 			
@@ -50,7 +52,9 @@ public class Application extends JFrame {
 				
 				try {
 					
-					Log.i(Application.class.getName(), "application will be closed");
+					serverController.destroy();
+					
+					Log.i(Application.class.getName(), "Application is closed");
 					System.exit(0);
 					
 				} catch(Exception exception) {
@@ -74,7 +78,7 @@ public class Application extends JFrame {
 		SettingsView settingsView = new SettingsView();
 		container.add(settingsView);
 		
-		new ServerController(settingsView); 
+		serverController = new ServerController(settingsView); 
 		
 		addWindowListener(windowAdapter);
 		

@@ -38,6 +38,14 @@ public class ServerController implements SettingsViewListener {
 		
 		this.settingsView = settingsView;
 		this.settingsView.addSettingsViewListener(this);
+		
+		Log.i(ServerController.class.getName(), "SettingsView has registered serverController as SettingsViewListener");
+	}
+	
+	public void destroy() {
+		
+		this.settingsView.removeSettingsViewListener(this);
+		Log.i(ServerController.class.getName(), "SettingsView has unregistered serverController");
 	}
 
 	@Override
