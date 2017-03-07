@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 <!DOCTYPE resources SYSTEM "../.files/integers.dtd">
 <resources>
-	<int name="server__port">5440</int>
+	<int name="server__port">5000</int>
 </resources>

@@ -4,7 +4,7 @@
 	<property name="src_directory" value="src"/>
 	<property name="dependencies_directory" value="dependencies"/>
 	<property name="app_name" value="ClientApplication"/>
-	<property name="main_class" value="fr.unicaen.info.users.jg_hg.java.chat.client_impl.Main"/>
+	<property name="main_class" value="implementation.Main"/>
 	
 	<path id="classpath">
 		<fileset dir="${dependencies_directory}" includes="**/*.jar"/>

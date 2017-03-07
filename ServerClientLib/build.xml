@@ -1,29 +1,29 @@
 <project basedir="." default="build" name="ServerClientLib">
 	
-	<property name="build_directory" value="bin"/>
+	<property name="build_directory" value="build"/>
 	<property name="src_directory" value="src"/>
 	<property name="generated_directory" value="${build_directory}/generated"/>
-	<property name="executable_name" value="fr.unicaen.info.users.jg_hg.java.chat.librairies.jar"/>
+	<property name="executable_name" value="chat.librairies.jar"/>
     <property name="debug_level" value="source,lines,vars"/>
     <property name="target_compiler" value="1.8"/>
     <property name="source_compiler" value="1.8"/>
     <property name="author" value="Jesus, Hivinau"/>
     <property name="app_version" value="1.0.1"/>
-	
+
 	<path id="classpath">
-		<fileset dir="${generated_directory}">
+		<fileset dir="${build_directory}">
 			<include name="*.jar"/>
 		</fileset>
-		<pathelement location="${generated_directory}"/>
+		<pathelement location="${build_directory}"/>
 	</path>
 	
 	<target name="clean">
-		<delete dir="${generated_directory}"/>
+		<delete dir="${build_directory}"/>
 	</target>
 	
 	<target name="init">
-		<mkdir dir="${generated_directory}"/>
-		<copy includeemptydirs="false" todir="${generated_directory}">
+		<mkdir dir="${build_directory}"/>
+		<copy includeemptydirs="false" todir="${build_directory}">
 			<fileset dir="${src_directory}">
 				<exclude name="**/*.launch"/>
 				<exclude name="**/*.java"/>
@@ -32,11 +32,13 @@
 	</target>
 	
 	<target name="build" depends="clean, init">
-		<javac srcdir="${src_directory}" destdir="${generated_directory}" debug="true" includeantruntime="false"
-			debuglevel="${debug_level}" source="${source_compiler}" target="${target_compiler}" deprecation="true">
-			<src path="${src_directory}"/>
-			<classpath refid="classpath"/>
-		</javac>
+        <mkdir dir="${build_directory}/classes"/>
+        <echo message="${build_directory}: created"/>
+        <javac srcdir="${src_directory}" destdir="${build_directory}/classes" debug="true" includeantruntime="false"
+        	debuglevel="${debug_level}" source="${source_compiler}" target="${target_compiler}" deprecation="true">
+    		<src path="src"/>
+        	<classpath refid="classpath"/>
+        </javac>
 	</target>
 	
 	<target name="jar" depends="build">
@@ -45,7 +47,7 @@
 			    	              offset="0" unit="hour" timezone="Europe/Paris"/>
 		</tstamp>
 		<echo message="Generated at: ${execute_time}"/>
-		<jar destfile="${generated_directory}/${executable_name}" basedir="${generated_directory}">
+		<jar destfile="${generated_directory}/${executable_name}" basedir="${build_directory}/classes">
 			<manifest>
 				<attribute name="Created-By" value="${author}"/>
 				<attribute name="Implementation-Title" value="${executable_name}"/>
