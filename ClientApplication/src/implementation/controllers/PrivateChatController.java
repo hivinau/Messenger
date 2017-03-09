@@ -20,7 +20,9 @@
 package implementation.controllers;
 
 import helpers.*;
+import java.io.*;
 import java.awt.*;
+import java.net.*;
 import javax.swing.*;
 import common.annotations.*;
 import implementation.views.*;
@@ -30,18 +32,22 @@ import implementation.views.FriendsView.*;
 @SuppressWarnings("serial")
 public class PrivateChatController extends JPanel implements FriendsViewListener {
 
-	private final RootController rootController;
+	private final ClientController clientController;
+	private final SettingsController settingsController;
 	private final FriendsView friendsView;
 	private final JPanel rightPanel;
+	private final JToggleButton connexionButton;
 	
-	public PrivateChatController(RootController rootController) {
+	public PrivateChatController(ClientController clientController) {
 		super(new GridLayout(1, 1));
 		
-		this.rootController = rootController;
+		this.clientController = clientController;
+		
+		settingsController = new SettingsController(null, Resource.getInstance().getString("settings"));
 		
 		friendsView = new FriendsView();
         friendsView.addFriendsViewListener(this);
-        friendsView.addSelf(Resource.getInstance().getString("self"), Color.RED);
+        connexionButton = friendsView.addSelf(Resource.getInstance().getString("self"), Color.RED);
         
         rightPanel = new JPanel();
 		
@@ -60,8 +66,12 @@ public class PrivateChatController extends JPanel implements FriendsViewListener
 			
 			if(((JToggleButton) component).isSelected()) {
 				
-				rootController.showSettings();
 			}
 		}
+	}
+	
+	public void changeConnexionState(boolean state) {
+		
+		connexionButton.setSelected(state);
 	}
 }

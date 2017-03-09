@@ -19,18 +19,18 @@
 
 package server;
 
-import common.*;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import server.event.*;
+import common.protocols.*;
 import common.annotations.*;
-import common.protocols.BroadcastProtocol;
 import common.serializable.*;
 import java.util.concurrent.*;
-import server.ClientManager.*;
+import common.protocols.event.*;
 
 @Developer(name="Hivinau GRAFFE")
-public class Server implements ClientManagerListener {
+public class Server implements ProtocolObserver {
 	
 	public static class ServerConfiguration {
 		
@@ -182,29 +182,34 @@ public class Server implements ClientManagerListener {
 			throw new CloneNotSupportedException();
 		}
 	}
-	
-	private final ServerSocket serverSocket;
+
+	private final ServerListener serverListener;
 	private final ExecutorService executor; 
 	private final List<Future<?>> threads;
-	private final Set<LogEventListener> logs;
 	private final Map<ClientManager, User> clients;
-	
+
+	private ServerSocket serverSocket = null;
 	private boolean running = false;
 	
 	/**
 	 * Creates an unbound server socket
+	 * @param serverListener listener to retrieve events
 	 * @throws IOException IO error when opening the socket
 	 */
-	public Server() throws IOException {
+	public Server(ServerListener serverListener) throws IOException {
 		
-		this(ServerConfiguration.getInstance());
+		this(serverListener, ServerConfiguration.getInstance());
 	}
 	
 	/**
 	 * Creates an unbound server socket
+	 * @param serverListener listener to retrieve events
+	 * @param configuration configuration for server
 	 * @throws IOException IO error when opening the socket
 	 */
-	public Server(ServerConfiguration configuration) throws IOException {
+	public Server(ServerListener serverListener, ServerConfiguration configuration) throws IOException {
+		
+		this.serverListener = serverListener;
 		
 		serverSocket = new ServerSocket(configuration.getPort());
 		serverSocket.setReuseAddress(configuration.isReuseAddress());
@@ -216,9 +221,8 @@ public class Server implements ClientManagerListener {
 				1000, TimeUnit.SECONDS, 
 				new LinkedBlockingQueue<Runnable>());
 		
-		threads = new ArrayList<>();
-		logs = new HashSet<>();
-		clients = new HashMap<>();
+		threads = Collections.synchronizedList(new LinkedList<>());
+		clients = Collections.synchronizedMap(new HashMap<>());
 	}
 	
 	/**
@@ -232,7 +236,7 @@ public class Server implements ClientManagerListener {
 	 * @throws UnknownHostException 
      *
      */
-	public InetAddress start() throws UnknownHostException {
+	public synchronized InetAddress start() throws UnknownHostException {
 		
 		running = true;
 
@@ -246,19 +250,18 @@ public class Server implements ClientManagerListener {
 					try {
 						
 						Socket socket = serverSocket.accept();
+						socket.setSoTimeout(serverSocket.getSoTimeout());
 						
 						ClientManager clientManager = new ClientManager(socket);
-				
-						new Thread(new ClientManager(socket)).start();
 						
-						clientManager.registerClientManagerListener(Server.this);
+						clientManager.registerObserver(Server.this);
 
 						Future<?> thread = executor.submit(clientManager);
 						threads.add(thread);
 						
 					} catch (IOException exception) {
-
-						log(exception.getMessage(), true);
+						
+						eventOccured(Server.this, exception);
 					}
 				}
 				
@@ -267,8 +270,9 @@ public class Server implements ClientManagerListener {
 					serverSocket.close();
 					
 				} catch (IOException exception) {
-
-					log(exception.getMessage(), true);
+					
+					eventOccured(Server.this, exception);
+					serverSocket = null;
 				}
 			}
 			
@@ -290,13 +294,13 @@ public class Server implements ClientManagerListener {
      * as well.
      *
      */
-	public void yield()  {
+	public synchronized void yield()  {
 		
 		running = false;
 		
 		for(Map.Entry<ClientManager, User> entry: clients.entrySet()) {
 			
-			entry.getKey().unregisterClientManagerListener(this);
+			entry.getKey().unregisterObserver(this);
 		}
 		
 		for (Iterator<Future<?>> iterator = threads.iterator(); iterator.hasNext();) {
@@ -310,51 +314,103 @@ public class Server implements ClientManagerListener {
 			
 			iterator.remove();
 		}
+		
 		executor.shutdownNow();
 	}
 	
-	public boolean addLogEventListener(LogEventListener listener) {
-		
-		return logs.add(listener);
-	}
-	
-	public boolean removeLogEventListener(LogEventListener listener) {
-		
-		return logs.remove(listener);
-	}
-	
 	@Override
-	public void map(ClientManager client, User user) {
+	public void eventOccured(Object source, Object value) {
 		
-		String message = String.format("'%s' connected%n", user.getName());
-		log(message, false);
+		if(source instanceof ClientManager) {
+			
+			if(value instanceof User) {
+				
+				ClientManager clientManager = (ClientManager) source;
+				
+				//add new client to clients list
+				User user = addClient(clientManager, (User) value); 
+				
+				if(user == null) {
+					
+					serverListener.eventOccured(new ServerEvent(this));
+					
+					//new connection occured, notify all clients for that event
+					sendMessage(new Message(SenderProtocol.USER_CONNECTED, value));
+				}
+				
+			} else if(value instanceof Message) {
+				
+				Message message = (Message) value;
+				
+				if(message.getCommand().equals(ReceiverProtocol.USER_DISCONNECTED)) {
+
+					//remove client if value state is false represented socket is closed
+					removeClient((ClientManager) source);
+					
+					serverListener.eventOccured(new ServerEvent(this));
+				}
+			}
+			
+		}
+	}
+	
+	/**
+	 * Returns the number of clients connected in network.
+     *
+     * @return  number of clients connected in network.
+	 */
+	public int getClientsCount() {
+		
+		return clients.size();
+	}
+	
+	private void startMessageReceiver(ClientManager client) {
 		
 		try {
 
-			for(Map.Entry<ClientManager, User> entry: clients.entrySet()) {
-				
-				entry.getKey().sendPublicMessage(new Message(BroadcastProtocol.USER_CONNECTED, user));
-			}
-			
-			clients.put(client, user);
+			client.startMessageReceiver();
 			
 		} catch (IOException exception) {
 			
-			log(exception.getMessage(), true);
+			eventOccured(Server.this, exception);
 		}
 	}
 	
-	@Override
-	public void throwError(String error) {
-		
-		log(error, true);
-	}
-	
-	private void log(String message, boolean isError) {
-		
-		for(LogEventListener listener: logs) {
+	private void sendMessage(Message message) {
+
+		for(Map.Entry<ClientManager, User> entry: clients.entrySet()) {
 			
-			listener.log(message, isError);
+			sendMessage(entry.getKey(), message);
 		}
 	}
+	
+	private void sendMessage(ClientManager clientManager, Message message) {
+		
+		try {
+			
+			clientManager.sendMessage(message);
+			
+		} catch (IOException exception) {
+			
+			eventOccured(Server.this, exception);
+		}
+	}
+	
+	private User addClient(ClientManager client, User user) {
+		
+		return clients.put(client, user);
+	}
+	
+	private boolean removeClient(ClientManager client) {
+		
+		User user = clients.get(client);
+		
+		if(user != null) {
+
+			return clients.remove(client, user);
+		}
+		
+		return false;
+	}
+
 }

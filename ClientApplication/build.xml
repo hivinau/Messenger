@@ -4,7 +4,7 @@
 	<property name="src_directory" value="src"/>
 	<property name="dependencies_directory" value="dependencies"/>
 	<property name="app_name" value="ClientApplication"/>
-	<property name="main_class" value="implementation.Main"/>
+	<property name="main_class" value="implementation.Application"/>
 	
 	<path id="classpath">
 		<fileset dir="${dependencies_directory}" includes="**/*.jar"/>

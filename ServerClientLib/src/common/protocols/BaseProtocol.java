@@ -26,12 +26,37 @@ import common.annotations.*;
 @Developer(name="Hivinau GRAFFE")
 public abstract class BaseProtocol implements Runnable {
 
-    protected final PrintWriter writer;
-    protected final BufferedReader reader;
+    protected PrintWriter writer = null;
+    protected BufferedReader reader = null;
 	
 	public BaseProtocol(Socket socket) throws IOException {
 		
 		writer = new PrintWriter(socket.getOutputStream(), true);                   
 		reader = new BufferedReader( new InputStreamReader(socket.getInputStream()));
+	}
+	
+	public void release() {
+		
+		if(reader != null) {
+			
+			try {
+				
+				reader.close();
+				
+			} catch (Exception ignored) {}
+			
+			reader = null;
+		}
+		
+		if(writer != null) {
+			
+			try {
+				
+				writer.close();
+				
+			} catch (Exception ignored) {}
+			
+			writer = null;
+		}
 	}
 }

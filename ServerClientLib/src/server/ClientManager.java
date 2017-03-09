@@ -21,13 +21,16 @@ package server;
 
 import java.io.*;
 import java.net.*;
-import java.util.*;
 import common.protocols.*;
+import common.Command;
 import common.annotations.*;
 import common.serializable.*;
+import helpers.Serializer;
+import server.Server.ServerConfiguration;
+import common.protocols.event.*;
 
 @Developer(name="Hivinau GRAFFE")
-public class ClientManager implements Runnable {
+public class ClientManager extends AbstractProtocol implements Runnable {
 	
 	public interface ClientManagerListener {
 
@@ -40,28 +43,14 @@ public class ClientManager implements Runnable {
 		void throwError(String error);
 	}
 	
-	private final Socket socket;
-	private final Set<ClientManagerListener> listeners;
+	private Socket socket = null;
+	private PrintWriter writer = null;
+	private BufferedReader reader = null;
+	private boolean isOnline = false;
 	
-	public ClientManager(Socket socket) {
+	public ClientManager(Socket socket) throws SocketException {
 		
 		this.socket = socket;
-		listeners = new HashSet<>();
-	}
-	
-	public boolean registerClientManagerListener(ClientManagerListener listener) {
-		
-		return listeners.add(listener);
-	}
-	
-	public boolean unregisterClientManagerListener(ClientManagerListener listener) {
-		
-		return listeners.remove(listener);
-	}
-	
-	public void sendMessage(Message message) throws IOException {
-		
-		//sendMessageWith(writer, message);
 	}
 	
 	public Socket getSocket() {
@@ -69,40 +58,167 @@ public class ClientManager implements Runnable {
 		return socket;
 	}
 	
-	public void sendUserProfil(User user) {
+	@Override
+	public int hashCode() {
 		
-		for(ClientManagerListener listener: listeners) {
-			
-			listener.map(this, user);
-		}
+		return socket.hashCode();
 	}
 	
-	public void sendProcessingError(String error) {
+	@Override
+	public boolean equals(Object obj) {
 		
-		for(ClientManagerListener listener: listeners) {
+		boolean equals = false;
+		
+		if(obj instanceof ClientManager) {
 			
-			listener.throwError(error);
+			ClientManager clientManager = (ClientManager) obj;
+			equals = clientManager.socket.equals(socket);
 		}
+		
+		return equals;
 	}
 	
-	public void sendPublicMessage(Message message) throws IOException {
+	public void startMessageReceiver() throws IOException {
 		
-		BroadcastProtocol broadcast = new BroadcastProtocol(this, message);
-		new Thread(broadcast).start();
+		//ReceiverProtocol receiver = new ReceiverProtocol(this);
+		//new Thread(receiver).start();
+	}
+	
+	public void sendMessage(Message message) throws IOException {
+
+		//transform Message object to String content
+		String content = Serializer.serialize(message);
+		
+		//server send status to client
+        writer.println(content);
+        writer.flush();
 	}
 	
 	@Override
 	public void run() {
 		
-		try {
+		boolean identified = false;
+		
+		while(!socket.isClosed()) {
 			
-			BaseProtocol authentication = new AuthenticationProtocol(this);
-			new Thread(authentication).start();
-			
-		} catch(Exception exception) {
+			try {
+				
+				writer = new PrintWriter(socket.getOutputStream());                  
+				reader = new BufferedReader( new InputStreamReader(socket.getInputStream()));    
+	            
+	            if(!identified) {
 
-			sendProcessingError(exception.getMessage());
+		            //AUTHENTIFICATION PROTOCOL
+					
+					//server needs user profile to map client identity
+					//init first request
+					Message identityRequest = new Message(Command.IDENTITY_REQUEST, null);
+		            sendMessage(identityRequest);
+	    			
+		            
+		            //check client response with timeout
+		            String response = read();
+		            
+		            if(response == null) {
+		            	
+		            	//client is unreachable
+		            	break;
+		            }
+    	            
+    	            //transform String content to Message object
+		            Message identityResponse = (Message) Serializer.deserialize(response);
+	            	
+	            	//check if response command is IDENTITY_RESPONSE
+	            	//and response contains user profil
+	            	if(identityResponse.getCommand().equals(Command.IDENTITY_RESPONSE) &&
+	            			identityResponse.getData() != null && identityResponse.getData() instanceof User) {
+            			
+	            		//server will map user profil to this client
+            			sendEvent(ClientManager.this, identityResponse.getData());
+	            		
+	            		identified = true;
+	            		isOnline = true;
+	            		
+	            		//server prevent client that status is online
+			            Message status = new Message(Command.ONLINE, null);
+			            sendMessage(status);
+			            
+			            //next loops, cursor will be on READ PROTOCOL
+	            	}
+	            	
+	            	//server needs identity, 
+            		//next loops, cursor will be on AUTHENTIFICATION PROTOCOL again
+	            	
+	            } else {
+	    			
+	    			System.out.println("reading");
+    	            
+    	            //READ PROTOCOL
+            		
+            		//server can listen messages from this client on loop
+            		
+            		while(isOnline) {
+        	            
+        	            //wait for client message with timeout
+            			String content = read();
+            			
+            			if(content == null) {
+    		            	
+    		            	//client is unreachable
+                    		isOnline = false;
+            				break;
+            			}
+        	            
+        	            //transform String content to Message object
+                    	Message message = (Message) Serializer.deserialize(content);
+                		
+                    	final String command = message.getCommand();
+                		
+                		switch (command) {
+                		case Command.OFFLINE:
+                			//client needs to disconnect from server
+        	    			
+        	    			System.out.println("client is offline");
+        	    			
+                			close();
+                			break;
+						default:
+							break;
+						}
+            		}
+	            }
+            	
+			} catch(Exception exception) {
+
+				//sendEvent(ClientManager.this, exception);
+			}
 		}
+	}
+	  
+	private String read() throws IOException {
+
+		return reader.readLine();
+	}
+	
+	public void release() {
+		
+		if(socket != null) {
+			
+			try {
+				
+				socket.close();
+				
+			} catch (Exception ignored) {}
+			
+			socket = null;
+		}
+	}
+	
+	public void close() throws IOException {
+		
+		writer = null;
+		reader = null;
+		socket.close();
 	}
 }
 

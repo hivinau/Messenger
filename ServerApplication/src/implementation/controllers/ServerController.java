@@ -23,13 +23,14 @@ import utils.*;
 import server.*;
 import java.io.*;
 import java.net.*;
+import server.event.*;
 import server.Server.*;
 import common.annotations.*;
 import implementation.views.*;
 import implementation.views.SettingsView.*;
 
 @Developer(name="Jesus GARNICA OLARRA")
-public class ServerController implements SettingsViewListener {
+public class ServerController implements SettingsViewListener, ServerListener {
 
 	private final SettingsView settingsView;
 	private Server server = null;
@@ -40,12 +41,6 @@ public class ServerController implements SettingsViewListener {
 		this.settingsView.addSettingsViewListener(this);
 		
 		Log.i(ServerController.class.getName(), "SettingsView has registered serverController as SettingsViewListener");
-	}
-	
-	public void destroy() {
-		
-		this.settingsView.removeSettingsViewListener(this);
-		Log.i(ServerController.class.getName(), "SettingsView has unregistered serverController");
 	}
 
 	@Override
@@ -67,15 +62,32 @@ public class ServerController implements SettingsViewListener {
 			stop();
 		}
 	}
+
+	@Override
+	public void eventOccured(ServerEvent event) {
+		
+		int count = ((Server) event.getSource()).getClientsCount();
+		
+		String log = String.format("Server has %d client%s online", count, count > 1 ? "s" : "");
+		Log.i(ServerController.class.getName(), log);
+	}
+	
+	public void destroy() {
+		
+		this.settingsView.removeSettingsViewListener(this);
+		Log.i(ServerController.class.getName(), "SettingsView has unregistered serverController");
+	}
 	
 	private void start() throws NumberFormatException, IOException {
 		
 		//stop if needed
 		stop();
 		
-		server = new Server(ServerConfiguration.getInstance()
-				.setPort(this.settingsView.getPort()));
+		//set port
+		ServerConfiguration configuration = ServerConfiguration.getInstance().setPort(this.settingsView.getPort());
 		
+		//launch server with port and default configurations
+		server = new Server(this, configuration);
 		InetAddress address = server.start();
 		
 		String log = String.format("Server is started on '%s:%d'", address.getHostAddress(), this.settingsView.getPort());

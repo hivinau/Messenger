@@ -40,12 +40,11 @@ public class SettingsController extends JDialog implements SettingsViewListener,
 		
 		void visibilityChanged(SettingsController controller, boolean shown);
 	}
-	
-	public boolean canConnect = false;
-	
-	private SettingsView settingsView = null;
 
 	private final Set<SettingsControllerListener> listeners;
+	
+	private boolean valuesChanged = false;
+	private SettingsView settingsView = null;
 	
 	private ComponentAdapter componentAdapter = new ComponentAdapter() {
 		
@@ -57,9 +56,9 @@ public class SettingsController extends JDialog implements SettingsViewListener,
 			
 			Preferences preferences = Preferences.userRoot();
 	        
-	        settingsView.setUsername(preferences.get(Application.USERNAME, null));
-	        settingsView.setHostname(preferences.get(Application.HOSTNAME, null));
-	        settingsView.setHostport(preferences.getInt(Application.HOSTPORT, -1));
+	        settingsView.setUsername(preferences.get(Constant.USERNAME, null));
+	        settingsView.setHostname(preferences.get(Constant.HOSTNAME, null));
+	        settingsView.setHostport(preferences.getInt(Constant.HOSTPORT, -1));
 		}
 	};
 
@@ -86,16 +85,6 @@ public class SettingsController extends JDialog implements SettingsViewListener,
 		listeners = new HashSet<>();
 	}
 
-	public void addSettingsControllerListener(SettingsControllerListener listener) {
-
-		listeners.add(listener);
-	}
-
-	public void removeSettingsControllerListener(SettingsControllerListener listener) {
-
-		listeners.remove(listener);
-	}
-
 	@Override
 	public void onSaved(SettingsView view) {
 		
@@ -103,15 +92,15 @@ public class SettingsController extends JDialog implements SettingsViewListener,
 		
 		Map<String, Object> properties = new HashMap<>();
 		
-		properties.put(Application.USERNAME, view.getUsername());
-		properties.put(Application.HOSTNAME, view.getHostname());
-		properties.put(Application.HOSTPORT, view.getHostPort());
+		properties.put(Constant.USERNAME, view.getUsername());
+		properties.put(Constant.HOSTNAME, view.getHostname());
+		properties.put(Constant.HOSTPORT, view.getHostPort());
 		
 		PreferencesWriter writer = new PreferencesWriter(Preferences.userRoot(), properties);
 		writer.addPropertyChangeListener(this);
 		writer.execute();
 		
-		canConnect = true;
+		valuesChanged = true;
 		close();
 	}
 
@@ -120,7 +109,7 @@ public class SettingsController extends JDialog implements SettingsViewListener,
 		
 		Log.i(SettingsController.class.getName(), "onCancelled called");
 		
-		canConnect = false;
+		valuesChanged = false;
 		close();
 	}
 
@@ -144,6 +133,21 @@ public class SettingsController extends JDialog implements SettingsViewListener,
 					break;
 			}
 		}
+	}
+
+	public boolean addSettingsControllerListener(SettingsControllerListener listener) {
+
+		return listeners.add(listener);
+	}
+
+	public boolean removeSettingsControllerListener(SettingsControllerListener listener) {
+
+		return listeners.remove(listener);
+	}
+	
+	public boolean valuesUpdated() {
+		
+		return valuesChanged;
 	}
 	
 	private void close() {

@@ -10,6 +10,7 @@
 	
 	<string name="self">Moi</string>
 	
+	<string name="menu_bar">Fichier</string>
 	<string name="settings">Réglages</string>
 	<string name="name">Surnom: </string>
 	<string name="name_hint">Surnom</string>

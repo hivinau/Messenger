@@ -17,15 +17,17 @@
  * Contribué par : Jesus GARNICA OLARRA, Hivinau GRAFFE
  */
 
-package implementation.global;
+package common.protocols.event;
 
 import common.annotations.*;
 
-@Developer(name="Jesus GARNICA OLARRA")
-public class Application {
+@Developer(name="Hivinau GRAFFE")
+public interface ProtocolObserver {
 
-	public static final String USERNAME = "username";
-
-	public static final String HOSTNAME = "hostname";
-	public static final String HOSTPORT = "hostport";
+	/**
+	 * Prevent observer that a value is occured from source.
+	 * @param source source emitter
+	 * @param value value occured
+	 */
+	public void eventOccured(Object source, Object value);
 }

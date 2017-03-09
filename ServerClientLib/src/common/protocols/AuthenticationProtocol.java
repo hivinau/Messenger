@@ -30,8 +30,10 @@ public class AuthenticationProtocol extends BaseProtocol {
 	
 	public static final String IDENTITY_REQUEST = "Who are you?";
 	public static final String IDENTITY_RESPONSE = "I am one client";
+	public static final String IDENTITY_ACCEPTED = "You are authenticated";
 	
 	private final ClientManager clientManager;
+	private boolean reading = true;
 	
 	public AuthenticationProtocol(ClientManager clientManager) throws IOException {
 		super(clientManager.getSocket());
@@ -55,44 +57,29 @@ public class AuthenticationProtocol extends BaseProtocol {
 			serverMessage = Serializer.serialize(request);
             writer.println(serverMessage);
 
-            while ((clientMessage = reader.readLine()) != null) {
+            while (((clientMessage = reader.readLine()) != null) && reading) {
             	
             	//retrieve client response
             	Message response = (Message) Serializer.deserialize(clientMessage);
+            	
             	
             	if(response.getCommand().equals(AuthenticationProtocol.IDENTITY_RESPONSE)) {
             		
             		Object user = response.getData();
             		
             		if(user instanceof User) {
-
-            			//handle user profile of client
-                		clientManager.sendUserProfil((User) user);
+            			
+            			clientManager.sendEvent(clientManager, user);
             		}
-            		break;
+            		
+            		reading = false;
             	}
             }
 			
 		} catch(Exception exception) {
 			
-			//handle error for client
-			clientManager.sendProcessingError(exception.getMessage());
+			clientManager.sendEvent(clientManager, exception);
 			
-		} finally {
-			
-			if(reader != null) {
-				
-				try {
-					reader.close();
-				} catch (Exception ignored) {}
-			}
-			
-			if(writer != null) {
-				
-				try {
-					writer.close();
-				} catch (Exception ignored) {}
-			}
-		}
+		} 
 	}
 }

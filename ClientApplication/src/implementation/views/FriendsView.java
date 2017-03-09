@@ -79,7 +79,7 @@ public class FriendsView extends JPanel {
 		listeners.remove(listener);
 	}
 	
-	public void addSelf(String name, Color color) {
+	public JToggleButton addSelf(String name, Color color) {
 	
 		JToggleButton button = new JToggleButton(name);
 		button.setHorizontalAlignment(SwingConstants.LEFT);
@@ -110,6 +110,8 @@ public class FriendsView extends JPanel {
 		});
 	
 		addCustomComponent(button);
+		
+		return button;
 	}
 	
 	public void addFriend(String name, Color color) {
