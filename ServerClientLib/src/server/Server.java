@@ -295,6 +295,10 @@ public class Server extends AbstractServerObserver {
      */
 	public synchronized void yield()  {
 		
+		//prevent all clients that server will be closed
+		Message offline = new Message(Command.SERVER_OFFLINE, null);
+		broadcastMessage(offline);
+		
 		running = false;
 		
 		for(Map.Entry<ClientManager, User> entry: clients.entrySet()) {
@@ -302,19 +306,16 @@ public class Server extends AbstractServerObserver {
 			entry.getKey().unregisterObserver(this);
 		}
 		
+		clients.clear();
+		
 		for (Iterator<Future<?>> iterator = threads.iterator(); iterator.hasNext();) {
 			
 			Future<?> thread = iterator.next();
-			
-			if(!thread.isCancelled()) {
-				
-				thread.cancel(true);
-			}
+
+			thread.cancel(true);
 			
 			iterator.remove();
 		}
-
-		//executor.shutdownNow();
 	}
 	
 	@Override
@@ -378,7 +379,7 @@ public class Server extends AbstractServerObserver {
 		return clients.size();
 	}
 	
-	private void broadcastMessage(Message message) {
+	private synchronized void broadcastMessage(Message message) {
 
 		for(Map.Entry<ClientManager, User> entry: clients.entrySet()) {
 			

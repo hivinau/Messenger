@@ -74,6 +74,7 @@ public class ServerController implements SettingsViewListener, ServerListener {
 	
 	public void destroy() {
 		
+		stop();
 		this.settingsView.removeSettingsViewListener(this);
 		Log.i(ServerController.class.getName(), "SettingsView has unregistered serverController");
 	}

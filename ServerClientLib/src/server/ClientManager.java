@@ -112,7 +112,7 @@ public class ClientManager extends ServerObserver implements Runnable {
 	            	
 	            	//check if response command is IDENTITY_RESPONSE
 	            	//and response contains user profil
-	            	if(identityResponse.getCommand().equals(Command.IDENTITY_RESPONSE) &&
+	            	if(identityResponse != null && identityResponse.getCommand().equals(Command.IDENTITY_RESPONSE) &&
 	            			identityResponse.getData() != null && identityResponse.getData() instanceof User) {
 	            		
 	            		//server prevent client that status is online
@@ -156,9 +156,9 @@ public class ClientManager extends ServerObserver implements Runnable {
                     	Message message = (Message) Serializer.deserialize(content);
                 		
                     	final String command = message.getCommand();
-                		
-                		switch (command) {
-                		case Command.OFFLINE:
+                    	
+                    	if(command != null && command.equals(Command.OFFLINE)) {
+
                 			//client needs to disconnect from server
 
                     		isOnline = false;
@@ -166,10 +166,7 @@ public class ClientManager extends ServerObserver implements Runnable {
         	    			handleStatus(ClientManager.this, null);
         	    			
                 			close();
-                			break;
-						default:
-							break;
-						}
+                    	}
             		}
 	            }
             	

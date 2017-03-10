@@ -47,7 +47,7 @@ public class Client extends ClientObserver implements Runnable {
 		
 		boolean identified = false;
 		
-		while(!socket.isClosed()) {
+		while(socket != null && !socket.isClosed()) {
 			
 			try {
 				
@@ -72,7 +72,7 @@ public class Client extends ClientObserver implements Runnable {
 		            Message identityRequest = (Message) Serializer.deserialize(request);
 		            
 		            //check if request command is IDENTITY_REQUEST
-	            	if(identityRequest.getCommand().equals(Command.IDENTITY_REQUEST)) {
+	            	if(identityRequest != null && identityRequest.getCommand().equals(Command.IDENTITY_REQUEST)) {
 	            		
 	            		//ask to retrieve user profile
 	            		List<User> users = retrieveClientUser();
@@ -92,7 +92,7 @@ public class Client extends ClientObserver implements Runnable {
 				            Message status = (Message) Serializer.deserialize(response);
 				            
 				            //check if status is ONLINE
-				            if(status.getCommand().equals(Command.ONLINE)) {
+				            if(status != null && status.getCommand().equals(Command.ONLINE)) {
 				            	
 				            	handleStatus(true);
 			            		
@@ -134,7 +134,7 @@ public class Client extends ClientObserver implements Runnable {
                     	final String command = message.getCommand();
                     	final Object data = message.getData();
             			
-            			if(command.equals(Command.CONTACT_ONLINE) || command.equals(Command.CONTACT_OFFLINE)) {
+            			if(command != null && (command.equals(Command.CONTACT_ONLINE) || command.equals(Command.CONTACT_OFFLINE))) {
                 			
                 			if(data != null && data instanceof User) {
                 				
@@ -142,6 +142,10 @@ public class Client extends ClientObserver implements Runnable {
                     			
                     			handleContactStatus(user, command.equals(Command.CONTACT_ONLINE));
                 			}
+            			} else if(command != null && command.equals(Command.SERVER_OFFLINE)) {
+
+		            		isOnline = false;
+			            	handleStatus(false);
             			}
             		}
 	            }

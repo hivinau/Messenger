@@ -69,6 +69,12 @@ public class ClientController extends AbstractClientObserver {
 	public void statusChanged(boolean status) {
 
 		privateChatController.changeConnexionState(status);
+		
+		if(!status) {
+
+			privateChatController.removeAllUser();
+			restart();
+		}
 	}
 	
 	
@@ -137,32 +143,19 @@ public class ClientController extends AbstractClientObserver {
 			client.yield();
 		}
 		
-		ExecutorService pool = Executors.newFixedThreadPool(threads.size()); 
-		
 		for (Iterator<Future<?>> iterator = threads.iterator(); iterator.hasNext();) {
 			
-			final Future<?> thread = iterator.next();
-			
-			pool.submit(new Runnable() {
-				
-				@Override
-				public void run() {
+			Future<?> thread = iterator.next();
 
-					thread.cancel(true);
-				}
-			});
+			thread.cancel(true);
 			
 			iterator.remove();
 		}
-		
-		pool.shutdown();
 	}
 
 	public synchronized void restart() {
 		
 		stop();
-		
-		privateChatController.removeAllUser();
 		
 		try {
 			
