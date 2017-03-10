@@ -33,7 +33,6 @@ public class ClientObserver extends AbstractObserver {
 		
 	}
 	
-	
 	/**
 	 * Prevent client that its status is on/off.
 	 * @param status status of client connexion.
@@ -50,6 +49,28 @@ public class ClientObserver extends AbstractObserver {
 					AbstractClientObserver observer = (AbstractClientObserver) ob;
 					
 					observer.statusChanged(status);
+				}
+			}
+		});
+	}
+	
+	/**
+	 * Prevent client that contact status is on/off.
+	 * @param user user profile of contact.
+	 * @param status status of contact connexion.
+	 */
+	public void handleContactStatus(User user, boolean status) {
+		
+		UIThread.run(new Runnable() {
+			
+			@Override
+			public void run() {
+				
+				for(IObserver ob: observers) {
+					
+					AbstractClientObserver observer = (AbstractClientObserver) ob;
+					
+					observer.contactStatusChanged(user, status);
 				}
 			}
 		});

@@ -22,6 +22,10 @@ package implementation.views;
 import helpers.*;
 import java.awt.*;
 import javax.swing.*;
+import javax.swing.event.*;
+import javax.swing.border.*;
+import java.util.concurrent.locks.*;
+
 import common.annotations.*;
 
 @Developer(name="Jesus GARNICA OLARRA")
@@ -29,12 +33,11 @@ import common.annotations.*;
 public class FriendsView extends JPanel {
 
     private final Box box;
-    private final Component glue;
+    
+	private final Lock locker = new ReentrantLock();
 	
 	public FriendsView() {
 		super(new BorderLayout());
-		
-		glue = Box.createVerticalGlue();
 		
 		box = Box.createVerticalBox();
 		box.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
@@ -51,6 +54,10 @@ public class FriendsView extends JPanel {
 		JLabel label = new JLabel(name);
 		label.setHorizontalAlignment(SwingConstants.LEFT);
 		label.setOpaque(false);
+		
+		Border border = BorderFactory.createEmptyBorder(5, 5, 5, 5);
+		label.setBorder(border);
+		
 		label.setIcon(new Icon() {
 			
 			@Override
@@ -79,12 +86,18 @@ public class FriendsView extends JPanel {
 		return label;
 	}
 	
-	public void addFriend(String name, Color color) {
+	public JButton addButton(String name, Color color) {
 	
-		JButton button = new JButton(name);
+		final JButton button = new JButton(name);
+		
 		button.setHorizontalAlignment(SwingConstants.LEFT);
 		button.setFocusPainted(false);
 		button.setOpaque(false);
+		
+		Border border = BorderFactory.createEmptyBorder(5, 5, 5, 5);
+		button.setBorder(border);
+		button.setBorderPainted(true);
+		
 		button.setIcon(new Icon() {
 			
 			@Override
@@ -107,26 +120,53 @@ public class FriendsView extends JPanel {
 				return 10;
 			}
 		});
-	
+		
 		addCustomComponent(button);
+		
+		return button;
+	}
+	
+	public void removeButton(JButton button) {
+
+		locker.lock();
+		
+		synchronized (box.getTreeLock()) {
+			
+			for(int i = 0; i < box.getComponentCount(); i++) {
+				
+				if(box.getComponent(i).equals(button)) {
+
+			        box.remove(i); //remove button
+			        break;
+				}
+			}
+
+	        box.revalidate();
+		}
+
+		locker.unlock();
 	}
 	
 	private void addCustomComponent(final JComponent component) {
+
+		locker.lock();
 		
-		component.setMaximumSize(new Dimension(Short.MAX_VALUE, component.getPreferredSize().height));
-        box.remove(glue);
-        box.add(Box.createVerticalStrut(5));
-        box.add(component);
-        box.add(glue);
-        box.revalidate();
-        
-        UIThread.run(new Runnable() {
+		synchronized (box.getTreeLock()) {
 			
-			@Override
-			public void run() {
+			component.setMaximumSize(new Dimension(Short.MAX_VALUE, component.getPreferredSize().height));
+	        box.add(component);
+	        box.revalidate();
+	        
+	        UIThread.run(new Runnable() {
 				
-				component.scrollRectToVisible(component.getBounds());
-			}
-		});
+				@Override
+				public void run() {
+					
+					component.scrollRectToVisible(component.getBounds());
+				}
+			});
+		}
+
+		locker.unlock();
     } 
 }

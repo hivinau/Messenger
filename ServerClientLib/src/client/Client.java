@@ -49,8 +49,6 @@ public class Client extends ClientObserver implements Runnable {
 		
 		while(!socket.isClosed()) {
 			
-			System.out.println("looping");
-			
 			try {
 				
 				writer = new PrintWriter(socket.getOutputStream());                  
@@ -110,21 +108,15 @@ public class Client extends ClientObserver implements Runnable {
 	            	}
 	            	
 	            } else {
-        			
-        			System.out.println("read");
     	            
     	            //READ PROTOCOL
             		
             		//client can listen messages from server on loop
             		
             		while(isOnline) {
-            			
-            			System.out.println(isOnline);
         	            
         	            //wait for server message with timeout
             			String content = read();
-            			
-            			System.out.println(content);
             			
             			if(content == null) {
     		            	
@@ -140,15 +132,19 @@ public class Client extends ClientObserver implements Runnable {
                     	Message message = (Message) Serializer.deserialize(content);
                 		
                     	final String command = message.getCommand();
-                		
-                		switch (command) {
-						default:
-							break;
-						}
+                    	final Object data = message.getData();
+            			
+            			if(command.equals(Command.CONTACT_ONLINE) || command.equals(Command.CONTACT_OFFLINE)) {
+                			
+                			if(data != null && data instanceof User) {
+                				
+                				User user = (User) data;
+                    			
+                    			handleContactStatus(user, command.equals(Command.CONTACT_ONLINE));
+                			}
+            			}
             		}
 	            }
-    			
-    			System.out.println("end 1");
             	
 			} catch(Exception exception) {
     			
@@ -156,11 +152,7 @@ public class Client extends ClientObserver implements Runnable {
 
 				handleError(exception);
 			}
-			
-			System.out.println("end 2");
 		}
-		
-		System.out.println("end loops");
 	}
 	
 	public void sendMessage(Message message) throws IOException {
@@ -170,7 +162,7 @@ public class Client extends ClientObserver implements Runnable {
 
 		if(writer != null) {
 
-			//server send status to client
+			//client send to server
 	        writer.println(content);
 	        writer.flush();
 		}

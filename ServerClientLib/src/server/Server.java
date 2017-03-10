@@ -326,8 +326,8 @@ public class Server extends AbstractServerObserver {
 			User user = clients.get(client);
 			
 			//notify all clients for that event
-			Message contactOnline = new Message(Command.CONTACT_OFFLINE, user); 
-			broadcastMessage(contactOnline);
+			Message contactOffline = new Message(Command.CONTACT_OFFLINE, user); 
+			broadcastMessage(contactOffline);
 
 			//remove client 
 			removeClient(client);
@@ -338,15 +338,26 @@ public class Server extends AbstractServerObserver {
 			//client is online
 			
 			//add new client to clients list
-			User user = addClient(client, (User) object); 
+			User user = (User) object; 
 			
-			if(user == null) { //check if user not exist on clients list
+			if(addClient(client, (User) object) == null) { //check if user not exist on clients list
 				
 				serverListener.eventOccured(new ServerEvent(this));
 				
-				//notify all clients for that event
+				//notify all clients for that event without new client
+				//do not use broadcastMessage() to avoid notify client itself
+				
 				Message contactOnline = new Message(Command.CONTACT_ONLINE, user); 
-				broadcastMessage(contactOnline);
+				for(Map.Entry<ClientManager, User> entry: clients.entrySet()) {
+					
+					if(!entry.getValue().equals(user)) {
+
+						entry.getKey().sendMessage(contactOnline);
+						
+						//send all client status to new client
+						client.sendMessage(new Message(Command.CONTACT_ONLINE, entry.getValue()));
+					}
+				}
 			}
 		}
 	}

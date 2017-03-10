@@ -29,6 +29,7 @@ import common.annotations.*;
 import common.serializable.*;
 import java.util.concurrent.*;
 import implementation.global.*;
+import implementation.helpers.*;
 
 @Developer(name="Jesus GARNICA OLARRA")
 public class ClientController extends AbstractClientObserver {
@@ -70,23 +71,41 @@ public class ClientController extends AbstractClientObserver {
 		privateChatController.changeConnexionState(status);
 	}
 	
+	
 	@Override
 	public User getUser() {
 
 		Preferences preferences = Preferences.userRoot();
 		
-        final String name = preferences.get(Constant.USERNAME, null);
-		return new User(name);
+        String name = preferences.get(Constant.USERNAME, null);
+        Location location = LocationHelper.randomLocation(0, 10);
+        
+		User user = new User(name, location);
+		
+		return user;
+	}
+
+	@Override
+	public void contactStatusChanged(User user, boolean status) {
+		
+		if(status) {
+			
+			privateChatController.addUser(user);
+		} else {
+			
+			privateChatController.removeUser(user);
+		}
 	}
 	
 	public synchronized void start()  {
 		
 		Preferences preferences = Preferences.userRoot();
 
+		final String name = preferences.get(Constant.USERNAME, null);
         final String host = preferences.get(Constant.HOSTNAME, null);
         final int port = preferences.getInt(Constant.HOSTPORT, -1);
         
-        if(host != null && port != -1) {
+        if(name != null && host != null && port != -1) { //check if settings are set before connexion
 
         	new Thread(new Runnable() {
 				
@@ -118,30 +137,38 @@ public class ClientController extends AbstractClientObserver {
 			client.yield();
 		}
 		
+		ExecutorService pool = Executors.newFixedThreadPool(threads.size()); 
+		
 		for (Iterator<Future<?>> iterator = threads.iterator(); iterator.hasNext();) {
 			
-			Future<?> thread = iterator.next();
+			final Future<?> thread = iterator.next();
+			
+			pool.submit(new Runnable() {
+				
+				@Override
+				public void run() {
 
-			thread.cancel(true);
+					thread.cancel(true);
+				}
+			});
 			
 			iterator.remove();
 		}
-
-		/*
-		executor.shutdown();
 		
-		try {
-			
-			executor.awaitTermination(5, TimeUnit.SECONDS);
-			
-		} catch (InterruptedException ignored) {}
-		
-		*/
+		pool.shutdown();
 	}
 
 	public synchronized void restart() {
 		
 		stop();
+		
+		privateChatController.removeAllUser();
+		
+		try {
+			
+			Thread.sleep(3000); //needs to wait, server has to notify all clients first
+			
+		} catch (InterruptedException ignored) {}
 		
 		client = null;
 		

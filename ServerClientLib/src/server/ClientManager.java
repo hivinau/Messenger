@@ -184,21 +184,31 @@ public class ClientManager extends ServerObserver implements Runnable {
 	 * Send message to client.
 	 * @param message message to send.
 	 */
-	public synchronized void sendMessage(Message message) {
+	public void sendMessage(Message message) {
 
 		//transform Message object to String content
 		String content = Serializer.serialize(message);
-		
-		//server send status to client
-        writer.println(content);
-        writer.flush();
+
+		if(writer != null) {
+
+			//server send to client
+	        writer.println(content);
+	        writer.flush();
+		}
 	}
 	  
-	private synchronized String read() throws IOException {
+	private String read() throws IOException {
 		
-		while(!reader.ready());
+		String result = null;
+		
+		while(reader != null && !reader.ready());
+		
+		if(reader != null) {
 
-		return reader.readLine();
+			result = reader.readLine();
+		}
+		
+		return result;
 	}
 	
 	private void close() throws IOException {
