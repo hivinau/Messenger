@@ -29,5 +29,6 @@ public abstract class AbstractClientObserver implements IObserver {
 	public abstract User getUser(); 
 	public abstract void statusChanged(boolean status);
 	public abstract void contactStatusChanged(User user, boolean status);
+	public abstract void postReceived(User user, String message);
 }
  

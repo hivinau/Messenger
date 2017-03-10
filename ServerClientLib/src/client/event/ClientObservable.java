@@ -93,5 +93,15 @@ public class ClientObservable extends AbstractObservable {
 		
 		return users;
 	}
+	
+	public void handlePost(User user, String message) {
+		
+		for(IObserver ob: observers) {
+			
+			AbstractClientObserver observer = (AbstractClientObserver) ob;
+			
+			observer.postReceived(user, message);
+		}
+	}
 
 }

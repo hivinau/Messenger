@@ -21,6 +21,7 @@ package server.event;
 
 import server.*;
 import common.event.*;
+import common.serializable.SendingPost;
 import common.annotations.*;
 
 @Developer(name="Hivinau GRAFFE")
@@ -32,4 +33,6 @@ public abstract class AbstractServerObserver implements IObserver {
 	 * @param object object mapped with this event.
 	 */
 	public abstract void clientStatusChanged(ClientManager client, Object object);
+	
+	public abstract void postReceived(ClientManager client, SendingPost post, boolean isPublic);
 }

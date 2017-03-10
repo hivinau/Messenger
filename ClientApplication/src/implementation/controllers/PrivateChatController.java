@@ -23,9 +23,10 @@ import helpers.*;
 import java.awt.*;
 import java.util.*;
 import javax.swing.*;
+import java.awt.event.*;
 import common.annotations.*;
 import common.serializable.*;
-import implementation.events.ChatObservable;
+import implementation.events.*;
 import implementation.views.*;
 
 @Developer(name="Jesus GARNICA OLARRA")
@@ -37,13 +38,42 @@ public class PrivateChatController extends JPanel {
 	private static final Color CONTACT_COLOR = Color.BLUE;
 	
 	private final FriendsView friendsView;
-	private final ChatAreaView rightPanel;
+	private final ChatAreaView chatAreaView;
 	private final JLabel statusLabel;
 	private final Set<JButton> contacts;
+	private final Map<User, ArrayList<String>> posts;
 	
-	public ChatObservable observable = new ChatObservable() {
+	private ActionListener sendClickListener = new ActionListener() {
 		
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			
+			String message = chatAreaView.getWriterText();
+
+			chatAreaView.setReaderText(Resource.getInstance().getString("self"), message);
+			
+			ArrayList<User> users = new ArrayList<>();
+			
+			for(JButton button: contacts) {
+				
+				String username = button.getText();
+				
+				for(Map.Entry<User, ArrayList<String>> entry: posts.entrySet()) {
+					
+					User user = entry.getKey();
+					
+					if(user.getFormattedName().equals(username)) {
+						
+						users.add(user);
+					}
+				}
+			}
+			
+			observable.handlePost(users, message);
+		}
 	};
+	
+	public ChatObservable observable = new ChatObservable();
 	
 	public PrivateChatController() {
 		super(new GridLayout(1, 1));
@@ -52,20 +82,35 @@ public class PrivateChatController extends JPanel {
         statusLabel = friendsView.addStatusLabel(Resource.getInstance().getString("self"), PrivateChatController.OFFLINE_COLOR);
         contacts = new HashSet<>();
         
-        rightPanel = new ChatAreaView();
+        chatAreaView = new ChatAreaView();
+        chatAreaView.registerButtonListener(sendClickListener);
 		
-		JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, friendsView, rightPanel);
+		JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, friendsView, chatAreaView);
 		split.setContinuousLayout(true);
         split.setResizeWeight(.25);
         split.setDividerSize(2);
         
         add(split);
+        
+        posts = new HashMap<>();
 	}
 	
 	public void addUser(User user) {
 		
 		JButton button = friendsView.addButton(user.getFormattedName(), PrivateChatController.CONTACT_COLOR);
 		contacts.add(button);
+		
+		posts.put(user, new ArrayList<>());
+	}
+	
+	public void addPost(User user, String message) {
+		
+		utils.Log.i(PrivateChatController.class.getName(), message);
+		
+		ArrayList<String> messages = posts.get(user);
+		messages.add(message);
+		
+		posts.put(user, messages);
 	}
 	
 	public void removeUser(User user) {
@@ -83,6 +128,8 @@ public class PrivateChatController extends JPanel {
 				break;
 			}
 		}
+		
+		posts.remove(user);
 	}
 	
 	public void removeAllUser() {

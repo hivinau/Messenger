@@ -18,15 +18,6 @@ public class ChatAreaView extends JPanel {
 	private final JTextArea writeArea;
 	private final JButton sendButton;
 	
-	private ActionListener sendListener = new ActionListener() {
-		
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			
-			setReadText(Resource.getInstance().getString("self"), writeArea.getText());
-		}
-	};
-	
 	public ChatAreaView() {
 		super(new SpringLayout());
 
@@ -47,7 +38,6 @@ public class ChatAreaView extends JPanel {
 		writeArea.setEditable(true);
 		
 		sendButton = new JButton(Resource.getInstance().getString("send"));
-		sendButton.addActionListener(sendListener);
 		
 		JScrollPane writeScroll = new JScrollPane(writeArea);
 		writeScroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
@@ -77,14 +67,39 @@ public class ChatAreaView extends JPanel {
 		layout.putConstraint(SpringLayout.NORTH, sendButton, 0, SpringLayout.NORTH, writeScroll);
 	}
 	
-	public void setReadText(String senderName, String text) {
+	public void registerButtonListener(ActionListener listener) {
+		
+		if(sendButton != null) {
+			
+			sendButton.addActionListener(listener);
+		}
+	}
+	
+	public void unregisterButtonListener(ActionListener listener) {
+		
+		if(sendButton != null) {
+			
+			sendButton.removeActionListener(listener);
+		}
+	}
+	
+	public String getWriterText() {
+		
+		String text = writeArea.getText();
+		
+		writeArea.setText(null);
+		
+		return text;
+	}
+	
+	public void setReaderText(String senderName, String text) {
 		
 		String template = Resource.getInstance().getString("template_writer");
 		String message = String.format(template, senderName, text);
-		setReadText(message);
+		setReaderText(message);
 	}
 	
-	private void setReadText(String text) {
+	private void setReaderText(String text) {
 		
 		String buffer = readArea.getText();
 		buffer = buffer + (buffer.length() == 0 ? "" : "\n");

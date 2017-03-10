@@ -130,23 +130,35 @@ public class Client extends ClientObservable implements Runnable {
         	            
         	            //transform String content to Message object
                     	Message message = (Message) Serializer.deserialize(content);
-                		
-                    	final String command = message.getCommand();
-                    	final Object data = message.getData();
-            			
-            			if(command != null && (command.equals(Command.CONTACT_ONLINE) || command.equals(Command.CONTACT_OFFLINE))) {
+                    	
+                    	if(message != null) {
+                    		
+                        	final String command = message.getCommand();
+                        	final Object data = message.getData();
                 			
-                			if(data != null && data instanceof User) {
-                				
-                				User user = (User) data;
+                			if(command != null && (command.equals(Command.CONTACT_ONLINE) || command.equals(Command.CONTACT_OFFLINE))) {
                     			
-                    			handleContactStatus(user, command.equals(Command.CONTACT_ONLINE));
-                			}
-            			} else if(command != null && command.equals(Command.SERVER_OFFLINE)) {
+                    			if(data != null && data instanceof User) {
+                    				
+                    				User user = (User) data;
+                        			
+                        			handleContactStatus(user, command.equals(Command.CONTACT_ONLINE));
+                    			}
+                			} else if(command != null && command.equals(Command.SERVER_OFFLINE)) {
 
-		            		isOnline = false;
-			            	handleStatus(false);
-            			}
+    		            		isOnline = false;
+    			            	handleStatus(false);
+    			            	
+                			} else if(command != null && command.equals(Command.PRIVATE_MESSAGE)) {
+
+                    			if(data != null && data instanceof ReceivingPost) {
+                    				
+                    				ReceivingPost post = (ReceivingPost) data;
+                    				
+                    				handlePost(post.getSource(), post.getMessage());
+                    			}
+                			}
+                    	}
             		}
 	            }
             	

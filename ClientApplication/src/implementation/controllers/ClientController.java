@@ -21,10 +21,14 @@ package implementation.controllers;
 
 import client.*;
 import helpers.*;
+
+import java.io.IOException;
 import java.util.*;
 import javax.swing.*;
 import client.event.*;
 import java.util.prefs.*;
+
+import common.Command;
 import common.annotations.*;
 import common.serializable.*;
 import java.util.concurrent.*;
@@ -50,11 +54,21 @@ public class ClientController extends AbstractClientObserver {
 			// TODO Auto-generated method stub
 			
 		}
-
-		@Override
-		public void messageReady(User[] user) {
+		
+		public void sendPost(ArrayList<User> user, String post) {
 			
+			try {
+				
+				SendingPost sendingPost = new SendingPost(user, post);
+				Message message = new Message(Command.PRIVATE_MESSAGE, sendingPost);
+				
+				client.sendMessage(message);
+			} catch (IOException exception) {
+				
+				exception.printStackTrace();
+			}
 		}
+		
 	};
 	
 	public ClientController(JTabbedPane tab) {
@@ -75,6 +89,12 @@ public class ClientController extends AbstractClientObserver {
 		threads = Collections.synchronizedList(new LinkedList<>());
         
         start();
+	}
+	
+	@Override
+	public void postReceived(User user, String post) {
+
+		privateChatController.addPost(user, post);
 	}
 	
 	@Override

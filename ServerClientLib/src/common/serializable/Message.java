@@ -27,17 +27,6 @@ public class Message implements Serializable {
 	
 	private static final long serialVersionUID = 108969423622209854L;
 
-	public class Command {
-
-		public static final String ASK_FOR_AUTHENTICATION = "ask_for_authentication";
-		public static final String AUTHENTICATION_RESPONSE = "authentication_response";
-		public static final String AUTHENTICATION_COMPLETED = "authentication_completed";
-		public static final String BROADCAST = "broadcast";
-		public static final String CONNECT = "connect";
-		public static final String DISCONNECT = "disconnect";
-		public static final String RECEIVE = "receive";
-	}
-
 	private String command;
 	private Object data;
 	
@@ -95,7 +84,7 @@ public class Message implements Serializable {
 		
 		stream.defaultReadObject();
 	    
-	    String command = (String) stream.readObject();
+	    String command = stream.readUTF();
 	    Object data = stream.readObject();
 	    
 	    this.command = command;
@@ -105,7 +94,7 @@ public class Message implements Serializable {
 	private void writeObject(ObjectOutputStream stream) throws IOException {
 		stream.defaultWriteObject();
 		
-		stream.writeObject(command);
+		stream.writeUTF(command);
 		stream.writeObject(data);
 	}
 }

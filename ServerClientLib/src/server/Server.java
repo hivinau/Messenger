@@ -319,7 +319,7 @@ public class Server extends AbstractServerObserver {
 	}
 	
 	@Override
-	public void clientStatusChanged(ClientManager client, Object object) {
+	public synchronized void clientStatusChanged(ClientManager client, Object object) {
 		
 		if(object == null) {
 			//client is offline
@@ -364,9 +364,46 @@ public class Server extends AbstractServerObserver {
 	}
 	
 	@Override
-	public void errorOccured(Throwable error) {
+	public synchronized void postReceived(ClientManager client, SendingPost post, boolean isPublic) {
 		
-		System.out.println(error.getMessage());
+		if(post != null) {
+			
+			if(isPublic) {
+				
+			} else {
+
+				//retrieve sender
+				User sender = clients.get(client);
+				
+				//retrieve all receivers
+				ArrayList<User> receivers = post.getDestinations();
+				
+				if(receivers != null && receivers.size() > 0) {
+					
+					//sender send post to receivers
+					//create message to send
+					ReceivingPost receivingPost = new ReceivingPost(sender, post.getMessage());
+					Message messagePost = new Message(Command.PRIVATE_MESSAGE, receivingPost);
+
+					for(Map.Entry<ClientManager, User> entry: clients.entrySet()) {
+						
+						for(User receiver: receivers) {
+							
+							if(!entry.getValue().equals(receiver)) {
+
+								entry.getKey().sendMessage(messagePost);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	@Override
+	public synchronized void errorOccured(Throwable error) {
+		
+		error.printStackTrace();
 	}
 	
 	/**

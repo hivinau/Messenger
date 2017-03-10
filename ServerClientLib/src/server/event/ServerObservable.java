@@ -21,6 +21,7 @@ package server.event;
 
 import server.*;
 import common.event.*;
+import common.serializable.SendingPost;
 import common.annotations.*;
 
 @Developer(name="Hivinau GRAFFE")
@@ -43,6 +44,16 @@ public class ServerObservable extends AbstractObservable {
 			AbstractServerObserver observer = (AbstractServerObserver) ob;
 			
 			observer.clientStatusChanged(client, object);
+		}
+	}
+	
+	public void handlePost(ClientManager client, SendingPost post, boolean isPublic) {
+		
+		for(IObserver ob: observers) {
+			
+			AbstractServerObserver observer = (AbstractServerObserver) ob;
+			
+			observer.postReceived(client, post, isPublic);
 		}
 	}
 

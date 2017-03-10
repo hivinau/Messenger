@@ -154,18 +154,32 @@ public class ClientManager extends ServerObservable implements Runnable {
         	            
         	            //transform String content to Message object
                     	Message message = (Message) Serializer.deserialize(content);
-                		
-                    	final String command = message.getCommand();
                     	
-                    	if(command != null && command.equals(Command.OFFLINE)) {
+                    	if(message != null) {
+                    		
+                        	final String command = message.getCommand();
+                        	final Object data = message.getData();
+                        	
+                        	System.out.println(command);
+                        	System.out.println(data);
+                        	
+                        	if(command != null && command.equals(Command.OFFLINE)) {
 
-                			//client needs to disconnect from server
+                    			//client needs to disconnect from server
 
-                    		isOnline = false;
-    	            		identified = false;
-        	    			handleStatus(ClientManager.this, null);
-        	    			
-                			close();
+                        		isOnline = false;
+        	            		identified = false;
+            	    			handleStatus(ClientManager.this, null);
+            	    			
+                    			close();
+                    			
+                        	} else if(command != null && command.equals(Command.PRIVATE_MESSAGE)) {
+
+                    			if(data != null && data instanceof SendingPost) {
+
+                            		handlePost(ClientManager.this, (SendingPost) data, false);
+                    			}
+                            }
                     	}
             		}
 	            }
