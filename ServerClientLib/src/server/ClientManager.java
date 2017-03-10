@@ -28,7 +28,7 @@ import common.annotations.*;
 import common.serializable.*;
 
 @Developer(name="Hivinau GRAFFE")
-public class ClientManager extends ServerObserver implements Runnable {
+public class ClientManager extends ServerObservable implements Runnable {
 	
 	public interface ClientManagerListener {
 

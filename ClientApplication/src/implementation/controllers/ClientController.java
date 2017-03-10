@@ -28,6 +28,8 @@ import java.util.prefs.*;
 import common.annotations.*;
 import common.serializable.*;
 import java.util.concurrent.*;
+
+import implementation.events.AbstractChatObserver;
 import implementation.global.*;
 import implementation.helpers.*;
 
@@ -41,10 +43,26 @@ public class ClientController extends AbstractClientObserver {
 	
 	private Client client = null;
 	
+	private AbstractChatObserver chatObserver = new AbstractChatObserver() {
+		
+		@Override
+		public void errorOccured(Throwable arg0) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void messageReady(User[] user) {
+			
+		}
+	};
+	
 	public ClientController(JTabbedPane tab) {
 		
 		privateChatController = new PrivateChatController();
 		publicChatController = new PublicChatController(this);
+		
+		privateChatController.observable.registerObserver(chatObserver);
 		
         tab.addTab(Resource.getInstance().getString("private_section"), privateChatController);
         tab.addTab(Resource.getInstance().getString("public_section"), publicChatController);

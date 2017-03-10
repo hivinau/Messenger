@@ -20,4 +20,7 @@
 	<string name="hostport_hint">Port</string>
 	<string name="cancel">Annuler</string>
 	<string name="login">Se connecter</string>
+	
+	<string name="send">Envoyer</string>
+	<string name="template_writer">Envoyé par '%s': %s</string>
 </resources>

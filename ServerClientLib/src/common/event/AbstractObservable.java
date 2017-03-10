@@ -23,11 +23,11 @@ import java.util.*;
 import common.annotations.*;
 
 @Developer(name="Hivinau GRAFFE")
-public abstract class AbstractObserver implements Observable {
+public abstract class AbstractObservable implements Observable {
 
 	protected final List<IObserver> observers;
 	
-	public AbstractObserver() {
+	public AbstractObservable() {
 		
 		observers = Collections.synchronizedList(new LinkedList<>());
 	}

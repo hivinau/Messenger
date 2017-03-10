@@ -29,7 +29,7 @@ import common.annotations.*;
 import common.serializable.*;
 
 @Developer(name="Hivinau GRAFFE")
-public class Client extends ClientObserver implements Runnable {
+public class Client extends ClientObservable implements Runnable {
 
 	private final Socket socket;
 
@@ -151,8 +151,6 @@ public class Client extends ClientObserver implements Runnable {
 	            }
             	
 			} catch(Exception exception) {
-    			
-    			exception.printStackTrace();
 
 				handleError(exception);
 			}

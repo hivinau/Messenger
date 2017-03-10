@@ -25,6 +25,7 @@ import java.util.*;
 import javax.swing.*;
 import common.annotations.*;
 import common.serializable.*;
+import implementation.events.ChatObservable;
 import implementation.views.*;
 
 @Developer(name="Jesus GARNICA OLARRA")
@@ -36,9 +37,13 @@ public class PrivateChatController extends JPanel {
 	private static final Color CONTACT_COLOR = Color.BLUE;
 	
 	private final FriendsView friendsView;
-	private final JPanel rightPanel;
+	private final ChatAreaView rightPanel;
 	private final JLabel statusLabel;
 	private final Set<JButton> contacts;
+	
+	public ChatObservable observable = new ChatObservable() {
+		
+	};
 	
 	public PrivateChatController() {
 		super(new GridLayout(1, 1));
@@ -47,7 +52,7 @@ public class PrivateChatController extends JPanel {
         statusLabel = friendsView.addStatusLabel(Resource.getInstance().getString("self"), PrivateChatController.OFFLINE_COLOR);
         contacts = new HashSet<>();
         
-        rightPanel = new JPanel();
+        rightPanel = new ChatAreaView();
 		
 		JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, friendsView, rightPanel);
 		split.setContinuousLayout(true);

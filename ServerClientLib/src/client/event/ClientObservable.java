@@ -26,9 +26,9 @@ import common.annotations.*;
 import common.serializable.*;
 
 @Developer(name="Hivinau GRAFFE")
-public class ClientObserver extends AbstractObserver {
+public class ClientObservable extends AbstractObservable {
 	
-	public ClientObserver() {
+	public ClientObservable() {
 		super();
 		
 	}

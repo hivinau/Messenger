@@ -24,9 +24,9 @@ import common.event.*;
 import common.annotations.*;
 
 @Developer(name="Hivinau GRAFFE")
-public class ServerObserver extends AbstractObserver {
+public class ServerObservable extends AbstractObservable {
 	
-	public ServerObserver() {
+	public ServerObservable() {
 		super();
 		
 	}
