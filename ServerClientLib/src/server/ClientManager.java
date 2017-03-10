@@ -19,18 +19,16 @@
 
 package server;
 
+import common.*;
 import java.io.*;
+import helpers.*;
 import java.net.*;
-import common.protocols.*;
-import common.Command;
+import server.event.*;
 import common.annotations.*;
 import common.serializable.*;
-import helpers.Serializer;
-import server.Server.ServerConfiguration;
-import common.protocols.event.*;
 
 @Developer(name="Hivinau GRAFFE")
-public class ClientManager extends AbstractProtocol implements Runnable {
+public class ClientManager extends ServerObserver implements Runnable {
 	
 	public interface ClientManagerListener {
 
@@ -78,22 +76,6 @@ public class ClientManager extends AbstractProtocol implements Runnable {
 		return equals;
 	}
 	
-	public void startMessageReceiver() throws IOException {
-		
-		//ReceiverProtocol receiver = new ReceiverProtocol(this);
-		//new Thread(receiver).start();
-	}
-	
-	public void sendMessage(Message message) throws IOException {
-
-		//transform Message object to String content
-		String content = Serializer.serialize(message);
-		
-		//server send status to client
-        writer.println(content);
-        writer.flush();
-	}
-	
 	@Override
 	public void run() {
 		
@@ -114,7 +96,6 @@ public class ClientManager extends AbstractProtocol implements Runnable {
 					//init first request
 					Message identityRequest = new Message(Command.IDENTITY_REQUEST, null);
 		            sendMessage(identityRequest);
-	    			
 		            
 		            //check client response with timeout
 		            String response = read();
@@ -122,6 +103,7 @@ public class ClientManager extends AbstractProtocol implements Runnable {
 		            if(response == null) {
 		            	
 		            	//client is unreachable
+    	    			handleStatus(ClientManager.this, null);
 		            	break;
 		            }
     	            
@@ -132,16 +114,16 @@ public class ClientManager extends AbstractProtocol implements Runnable {
 	            	//and response contains user profil
 	            	if(identityResponse.getCommand().equals(Command.IDENTITY_RESPONSE) &&
 	            			identityResponse.getData() != null && identityResponse.getData() instanceof User) {
-            			
-	            		//server will map user profil to this client
-            			sendEvent(ClientManager.this, identityResponse.getData());
-	            		
-	            		identified = true;
-	            		isOnline = true;
 	            		
 	            		//server prevent client that status is online
 			            Message status = new Message(Command.ONLINE, null);
 			            sendMessage(status);
+			            
+	            		//server will map user profil to this client
+            			handleStatus(ClientManager.this, identityResponse.getData());
+	            		
+	            		identified = true;
+	            		isOnline = true;
 			            
 			            //next loops, cursor will be on READ PROTOCOL
 	            	}
@@ -150,8 +132,6 @@ public class ClientManager extends AbstractProtocol implements Runnable {
             		//next loops, cursor will be on AUTHENTIFICATION PROTOCOL again
 	            	
 	            } else {
-	    			
-	    			System.out.println("reading");
     	            
     	            //READ PROTOCOL
             		
@@ -165,7 +145,10 @@ public class ClientManager extends AbstractProtocol implements Runnable {
             			if(content == null) {
     		            	
     		            	//client is unreachable
+
                     		isOnline = false;
+    	            		identified = false;
+        	    			handleStatus(ClientManager.this, null);
             				break;
             			}
         	            
@@ -177,8 +160,10 @@ public class ClientManager extends AbstractProtocol implements Runnable {
                 		switch (command) {
                 		case Command.OFFLINE:
                 			//client needs to disconnect from server
-        	    			
-        	    			System.out.println("client is offline");
+
+                    		isOnline = false;
+    	            		identified = false;
+        	    			handleStatus(ClientManager.this, null);
         	    			
                 			close();
                 			break;
@@ -190,31 +175,33 @@ public class ClientManager extends AbstractProtocol implements Runnable {
             	
 			} catch(Exception exception) {
 
-				//sendEvent(ClientManager.this, exception);
+				handleError(exception);
 			}
 		}
 	}
+	
+	/**
+	 * Send message to client.
+	 * @param message message to send.
+	 */
+	public synchronized void sendMessage(Message message) {
+
+		//transform Message object to String content
+		String content = Serializer.serialize(message);
+		
+		//server send status to client
+        writer.println(content);
+        writer.flush();
+	}
 	  
-	private String read() throws IOException {
+	private synchronized String read() throws IOException {
+		
+		while(!reader.ready());
 
 		return reader.readLine();
 	}
 	
-	public void release() {
-		
-		if(socket != null) {
-			
-			try {
-				
-				socket.close();
-				
-			} catch (Exception ignored) {}
-			
-			socket = null;
-		}
-	}
-	
-	public void close() throws IOException {
+	private void close() throws IOException {
 		
 		writer = null;
 		reader = null;

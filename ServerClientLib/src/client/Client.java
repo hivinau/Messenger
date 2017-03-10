@@ -19,49 +19,27 @@
 
 package client;
 
+import common.*;
 import helpers.*;
-import server.ClientManager;
-
 import java.io.*;
 import java.net.*;
+import java.util.*;
 import client.event.*;
-import common.protocols.*;
-import common.Command;
 import common.annotations.*;
 import common.serializable.*;
 
 @Developer(name="Hivinau GRAFFE")
-public class Client implements Runnable {
+public class Client extends ClientObserver implements Runnable {
 
-	private final ClientListener clientListener;
-	private final User user;
 	private final Socket socket;
 
     private PrintWriter writer = null;
 	private BufferedReader reader = null;
-	private boolean authenticated = false;
-	private boolean closeConnexion = false;
 	private boolean isOnline = false;
-	private Object message = null;
 	
-	public Client(ClientListener clientListener, User user, String host, int port) throws UnknownHostException, IOException {
-
-		this.clientListener = clientListener;
-		this.user = user;
+	public Client(String host, int port) throws UnknownHostException, IOException {
+		
 		socket = new Socket(host, port);
-		
-		//reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-		//writer = new PrintWriter(socket.getOutputStream(), true);
-	}
-	
-	public void sendMessage(Message message) throws IOException {
-
-		//transform Message object to String content
-		String content = Serializer.serialize(message);
-		
-		//server send status to client
-        writer.println(content);
-        writer.flush();
 	}
 	
 	@Override
@@ -71,10 +49,12 @@ public class Client implements Runnable {
 		
 		while(!socket.isClosed()) {
 			
+			System.out.println("looping");
+			
 			try {
 				
 				writer = new PrintWriter(socket.getOutputStream());                  
-				reader = new BufferedReader( new InputStreamReader(socket.getInputStream())); 
+				reader = new BufferedReader(new InputStreamReader(socket.getInputStream())); 
 	            
 	            if(!identified) {
 
@@ -86,6 +66,7 @@ public class Client implements Runnable {
 		            if(request == null) {
 		            	
 		            	//server is unreachable
+		            	handleStatus(false);
 		            	break;
 		            }
     	            
@@ -95,46 +76,63 @@ public class Client implements Runnable {
 		            //check if request command is IDENTITY_REQUEST
 	            	if(identityRequest.getCommand().equals(Command.IDENTITY_REQUEST)) {
 	            		
-	            		//client will send user profil to server
-						Message identityResponse = new Message(Command.IDENTITY_RESPONSE, user);
-			            sendMessage(identityResponse);
-			            
-			            //client waits for server response
-			            String response = read();
-	    	            
-	    	            //transform String content to Message object
-			            Message status = (Message) Serializer.deserialize(response);
-			            
-			            //check if status is ONLINE
-			            if(status.getCommand().equals(Command.ONLINE)) {
+	            		//ask to retrieve user profile
+	            		List<User> users = retrieveClientUser();
+	            		
+	            		if(users.size() >= 1) {
+	            			
+	            			User user = users.get(0);
 		            		
-		            		identified = true;
-		            		isOnline = true;
+		            		//client will send user profile to server
+							Message identityResponse = new Message(Command.IDENTITY_RESPONSE, user);
+				            sendMessage(identityResponse);
 				            
-				            //next loops, cursor will be on READ PROTOCOL
-			            }
+				            //client waits for server response
+				            String response = read();
+		    	            
+		    	            //transform String content to Message object
+				            Message status = (Message) Serializer.deserialize(response);
+				            
+				            //check if status is ONLINE
+				            if(status.getCommand().equals(Command.ONLINE)) {
+				            	
+				            	handleStatus(true);
+			            		
+			            		identified = true;
+			            		isOnline = true;
+					            
+					            //next loops, cursor will be on READ PROTOCOL
+				            }
+	            		}
 		            	
 		            	//client needs to be identified by server, 
 	            		//next loops, cursor will be on AUTHENTIFICATION PROTOCOL again
 	            	}
 	            	
 	            } else {
-	            	
-	            	System.out.println("Client is online");
+        			
+        			System.out.println("read");
     	            
     	            //READ PROTOCOL
             		
             		//client can listen messages from server on loop
             		
             		while(isOnline) {
+            			
+            			System.out.println(isOnline);
         	            
         	            //wait for server message with timeout
             			String content = read();
             			
+            			System.out.println(content);
+            			
             			if(content == null) {
     		            	
     		            	//server is unreachable
-                    		isOnline = false;
+
+		            		identified = false;
+		            		isOnline = false;
+			            	handleStatus(false);
             				break;
             			}
         	            
@@ -149,140 +147,68 @@ public class Client implements Runnable {
 						}
             		}
 	            }
+    			
+    			System.out.println("end 1");
             	
 			} catch(Exception exception) {
+    			
+    			exception.printStackTrace();
 
+				handleError(exception);
 			}
+			
+			System.out.println("end 2");
+		}
+		
+		System.out.println("end loops");
+	}
+	
+	public void sendMessage(Message message) throws IOException {
+
+		//transform Message object to String content
+		String content = Serializer.serialize(message);
+
+		if(writer != null) {
+
+			//server send status to client
+	        writer.println(content);
+	        writer.flush();
 		}
 	}
 	  
 	private String read() throws IOException {
-
-		return reader.readLine();
-	}
-	
-	/*
-	@Override
-	public void run() {
-
-        while (!socket.isClosed()) {
-
-        	message = null;
-
-    		try {
-    			
-    			for(int i = 0; i < 5; i++) {
-    				
-            		Message offlineMessage = new Message(ReceiverProtocol.USER_DISCONNECTED, null);
-            		sendMessage(offlineMessage);
-    			}
-
-    			String serverMessage = reader.readLine();
-        		
-        		if(serverMessage == null) {
-        	        
-        	        //server is offline
-        			authenticated = false;
-        			break;
-        		}
-            	
-            	//convert to message instance
-            	Message request = (Message) Serializer.deserialize(serverMessage);
-            	
-            	//retrieve server command
-            	String command = request.getCommand();
-            	
-            	//check authentication protocol
-            	if(command.equals(AuthenticationProtocol.IDENTITY_REQUEST)) {
-            		
-            		//send user object as client identity
-            		Message response = new Message(AuthenticationProtocol.IDENTITY_RESPONSE, user);
-            		sendMessage(response);
-            		
-            	} else if(command.equals(AuthenticationProtocol.IDENTITY_ACCEPTED)) {
-
-            		//client accepted by server
-            		authenticated = true;
-        			clientListener.eventOccured(new ClientEvent(Client.this));
-            		
-            	} else if(command.equals(SenderProtocol.USER_CONNECTED)) {
-
-            		//other client is online
-            		message = ((User) request.getData());
-        			clientListener.eventOccured(new ClientEvent(Client.this));
-            	}
-    			
-    		} catch(Exception exception) {
-    			
-    			exception.printStackTrace();
-    			clientListener.eventOccured(new ClientEvent(Client.this));
-    		}
-        }
-        
-        //server is offline
-		clientListener.eventOccured(new ClientEvent(Client.this));
 		
-		release();
-	}
-	*/
-	
-	public boolean isOnline() {
+		String result = null;
 		
-		return authenticated;
-	}
-	
-	public boolean hasMessage() {
-		
-		return message != null;
-	}
-	
-	public Object getMessage() {
-		
-		return message;
-	}
-	
-	public synchronized void yield() {
-		
-		try {
-			sendMessage(new Message(Command.OFFLINE, null));
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-	
-	public User getLogin() {
-		
-		return user;
-	}
-	
-	private void release() {
+		while(reader != null && !reader.ready());
 		
 		if(reader != null) {
-			
-			try {
-				
-				reader.close();
-				
-			} catch (Exception ignored) {}
+
+			result = reader.readLine();
 		}
 		
-		if(writer != null) {
-			
-			try {
-				
-				writer.close();
-				
-			} catch (Exception ignored) {}
-		}
+		return result;
+	}
+	
+	public void yield() {
 		
-		if(socket != null) {
+		try {
 			
-			try {
-				
-				socket.close();
-				
-			} catch (Exception ignored) {}
+			sendMessage(new Message(Command.OFFLINE, null));
+			close();
+
+    		isOnline = false;
+			
+		} catch (IOException exception) {
+
+			handleError(exception);
 		}
+	}
+	
+	private void close() throws IOException {
+		
+		writer = null;
+		reader = null;
+		socket.close();
 	}
 }

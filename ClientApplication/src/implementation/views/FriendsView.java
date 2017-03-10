@@ -21,34 +21,15 @@ package implementation.views;
 
 import helpers.*;
 import java.awt.*;
-import java.util.*;
 import javax.swing.*;
 import common.annotations.*;
-
-import java.awt.event.*;
 
 @Developer(name="Jesus GARNICA OLARRA")
 @SuppressWarnings("serial")
 public class FriendsView extends JPanel {
-	
-	public interface FriendsViewListener {
-		
-		void componentChanged(final FriendsView view, final Component component);
-	}
 
     private final Box box;
     private final Component glue;
-	
-	private final Set<FriendsViewListener> listeners;
-	
-	private ActionListener clientStateActionListener = new ActionListener() {
-		
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			
-			handleComponent((Component) e.getSource());
-		}
-	};
 	
 	public FriendsView() {
 		super(new BorderLayout());
@@ -63,30 +44,14 @@ public class FriendsView extends JPanel {
         scroll.getVerticalScrollBar().setUnitIncrement(25);
         
         add(scroll);
-		
-		listeners = new HashSet<>();
 	}
 	
-
+	public JLabel addStatusLabel(String name, Color color) {
 	
-	public void addFriendsViewListener(FriendsViewListener listener) {
-		
-		listeners.add(listener);
-	}
-	
-	public void removeFriendsViewListener(FriendsViewListener listener) {
-		
-		listeners.remove(listener);
-	}
-	
-	public JToggleButton addSelf(String name, Color color) {
-	
-		JToggleButton button = new JToggleButton(name);
-		button.setHorizontalAlignment(SwingConstants.LEFT);
-		button.setFocusPainted(false);
-		button.setOpaque(false);
-		button.addActionListener(clientStateActionListener);
-		button.setIcon(new Icon() {
+		JLabel label = new JLabel(name);
+		label.setHorizontalAlignment(SwingConstants.LEFT);
+		label.setOpaque(false);
+		label.setIcon(new Icon() {
 			
 			@Override
 			public void paintIcon(Component c, Graphics g, int x, int y) {
@@ -109,9 +74,9 @@ public class FriendsView extends JPanel {
 			}
 		});
 	
-		addCustomComponent(button);
+		addCustomComponent(label);
 		
-		return button;
+		return label;
 	}
 	
 	public void addFriend(String name, Color color) {
@@ -164,12 +129,4 @@ public class FriendsView extends JPanel {
 			}
 		});
     } 
-	
-	private void handleComponent(final Component component) {
-		
-		for(FriendsViewListener listener: listeners) {
-			
-			listener.componentChanged(this, component);
-		}
-	}
 }

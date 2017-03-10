@@ -20,34 +20,27 @@
 package implementation.controllers;
 
 import helpers.*;
-import java.io.*;
 import java.awt.*;
-import java.net.*;
 import javax.swing.*;
 import common.annotations.*;
 import implementation.views.*;
-import implementation.views.FriendsView.*;
 
 @Developer(name="Jesus GARNICA OLARRA")
 @SuppressWarnings("serial")
-public class PrivateChatController extends JPanel implements FriendsViewListener {
-
-	private final ClientController clientController;
-	private final SettingsController settingsController;
+public class PrivateChatController extends JPanel {
+	
+	private static final Color ONLINE_COLOR = Color.GREEN;
+	private static final Color OFFLINE_COLOR = Color.RED;
+	
 	private final FriendsView friendsView;
 	private final JPanel rightPanel;
-	private final JToggleButton connexionButton;
+	private final JLabel statusLabel;
 	
-	public PrivateChatController(ClientController clientController) {
+	public PrivateChatController() {
 		super(new GridLayout(1, 1));
 		
-		this.clientController = clientController;
-		
-		settingsController = new SettingsController(null, Resource.getInstance().getString("settings"));
-		
 		friendsView = new FriendsView();
-        friendsView.addFriendsViewListener(this);
-        connexionButton = friendsView.addSelf(Resource.getInstance().getString("self"), Color.RED);
+        statusLabel = friendsView.addStatusLabel(Resource.getInstance().getString("self"), PrivateChatController.OFFLINE_COLOR);
         
         rightPanel = new JPanel();
 		
@@ -59,19 +52,29 @@ public class PrivateChatController extends JPanel implements FriendsViewListener
         add(split);
 	}
 	
-	@Override
-	public void componentChanged(FriendsView view, Component component) {
-		
-		if(component instanceof JToggleButton) {
-			
-			if(((JToggleButton) component).isSelected()) {
-				
-			}
-		}
-	}
-	
 	public void changeConnexionState(boolean state) {
 		
-		connexionButton.setSelected(state);
+		statusLabel.setIcon(new Icon() {
+			
+			@Override
+			public void paintIcon(Component c, Graphics g, int x, int y) {
+				
+				g.setColor(state ? PrivateChatController.ONLINE_COLOR : PrivateChatController.OFFLINE_COLOR);
+				g.fillOval(x, y, getIconWidth(), getIconHeight());
+                g.drawOval(x, y, getIconWidth(), getIconHeight());
+			}
+			
+			@Override
+			public int getIconWidth() {
+
+				return 10;
+			}
+			
+			@Override
+			public int getIconHeight() {
+
+				return 10;
+			}
+		});
 	}
 }

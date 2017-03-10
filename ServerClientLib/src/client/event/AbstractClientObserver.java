@@ -17,43 +17,16 @@
  * Contribué par : Jesus GARNICA OLARRA, Hivinau GRAFFE
  */
 
-package common.protocols.event;
+package client.event;
 
-import java.util.*;
+import common.event.*;
 import common.annotations.*;
+import common.serializable.*;
 
 @Developer(name="Hivinau GRAFFE")
-public class AbstractProtocol implements ProtocolObservable {
-
-	private final List<ProtocolObserver> observers;
+public abstract class AbstractClientObserver implements IObserver {
 	
-	public AbstractProtocol() {
-		
-		observers = Collections.synchronizedList(new LinkedList<>());
-	}
-	
-	@Override
-	public void registerObserver(ProtocolObserver observer) {
-		
-		if(!observers.contains(observer)) {
-			
-			observers.add(observer);
-		}
-	}
-
-	@Override
-	public void unregisterObserver(ProtocolObserver observer) {
-		
-		observers.remove(observer);
-	}
-	
-	@Override
-	public void sendEvent(Object source, Object value) {
-		
-		for(ProtocolObserver observer: observers) {
-			
-			observer.eventOccured(source, value);
-		}
-	}
-
+	public abstract User getUser(); 
+	public abstract void statusChanged(boolean status);
 }
+ 

@@ -17,29 +17,29 @@
  * Contribué par : Jesus GARNICA OLARRA, Hivinau GRAFFE
  */
 
-package common.protocols.event;
+package common.event;
 
 import common.annotations.*;
 
 @Developer(name="Hivinau GRAFFE")
-public interface ProtocolObservable {
+public interface Observable {
 
 	/**
 	 * Register observer
 	 * @param observer observer to be registered
 	 */
-	public void registerObserver(ProtocolObserver observer);
+	public boolean registerObserver(IObserver observer);
 	
 	/**
 	 * Unregister observer
 	 * @param observer observer to be unregistered
 	 */
-	public void unregisterObserver(ProtocolObserver observer);
+	public boolean unregisterObserver(IObserver observer);
 	
+
 	/**
-	 * Handle a value from source.
-	 * @param source source emitter.
-	 * @param value value to be handled.
+	 * Throw error on server.
+	 * @param error error occured.
 	 */
-	public void sendEvent(Object source, Object value);
+	public void handleError(Throwable error);
 }

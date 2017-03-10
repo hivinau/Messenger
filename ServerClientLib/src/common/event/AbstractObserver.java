@@ -17,46 +17,40 @@
  * Contribué par : Jesus GARNICA OLARRA, Hivinau GRAFFE
  */
 
-package common.protocols;
+package common.event;
 
-import java.io.*;
-import java.net.*;
+import java.util.*;
 import common.annotations.*;
 
 @Developer(name="Hivinau GRAFFE")
-public abstract class BaseProtocol implements Runnable {
+public abstract class AbstractObserver implements Observable {
 
-    protected PrintWriter writer = null;
-    protected BufferedReader reader = null;
+	protected final List<IObserver> observers;
 	
-	public BaseProtocol(Socket socket) throws IOException {
+	public AbstractObserver() {
 		
-		writer = new PrintWriter(socket.getOutputStream(), true);                   
-		reader = new BufferedReader( new InputStreamReader(socket.getInputStream()));
+		observers = Collections.synchronizedList(new LinkedList<>());
+	}
+
+	@Override
+	public boolean registerObserver(IObserver observer) {
+		
+		return observers.add(observer);
+	}
+
+	@Override
+	public boolean unregisterObserver(IObserver observer) {
+		
+		return observers.remove(observer);
 	}
 	
-	public void release() {
+	@Override
+	public void handleError(Throwable error) {
 		
-		if(reader != null) {
+		for(IObserver observer: observers) {
 			
-			try {
-				
-				reader.close();
-				
-			} catch (Exception ignored) {}
-			
-			reader = null;
-		}
-		
-		if(writer != null) {
-			
-			try {
-				
-				writer.close();
-				
-			} catch (Exception ignored) {}
-			
-			writer = null;
+			observer.errorOccured(error);
 		}
 	}
+
 }

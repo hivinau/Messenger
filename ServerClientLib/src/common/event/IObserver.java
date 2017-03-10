@@ -17,17 +17,16 @@
  * Contribué par : Jesus GARNICA OLARRA, Hivinau GRAFFE
  */
 
-package common.protocols.event;
+package common.event;
 
 import common.annotations.*;
 
 @Developer(name="Hivinau GRAFFE")
-public interface ProtocolObserver {
-
+public interface IObserver {
+	
 	/**
-	 * Prevent observer that a value is occured from source.
-	 * @param source source emitter
-	 * @param value value occured
+	 * Handle server that an error is occured.
+	 * @param error error occured.
 	 */
-	public void eventOccured(Object source, Object value);
+	public void errorOccured(Throwable error);
 }

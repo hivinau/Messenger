@@ -110,9 +110,9 @@ public class Application extends Blurable implements ActionListener, SettingsCon
 	@Override
 	public void visibilityChanged(SettingsController settingsController, boolean shown) {
 		
-		if(settingsController.valuesUpdated()) {
+		if(!shown && settingsController.valuesUpdated()) {
 			
-			clientController.stop();
+			clientController.restart();
 		}
 	}
 

@@ -19,7 +19,6 @@
 
 package implementation.controllers;
 
-import utils.*;
 import client.*;
 import helpers.*;
 import java.util.*;
@@ -32,7 +31,7 @@ import java.util.concurrent.*;
 import implementation.global.*;
 
 @Developer(name="Jesus GARNICA OLARRA")
-public class ClientController implements ClientListener {
+public class ClientController extends AbstractClientObserver {
 	
 	private final PrivateChatController privateChatController;
 	private final PublicChatController publicChatController;
@@ -40,11 +39,10 @@ public class ClientController implements ClientListener {
 	private final List<Future<?>> threads;
 	
 	private Client client = null;
-
 	
 	public ClientController(JTabbedPane tab) {
 		
-		privateChatController = new PrivateChatController(this);
+		privateChatController = new PrivateChatController();
 		publicChatController = new PublicChatController(this);
 		
         tab.addTab(Resource.getInstance().getString("private_section"), privateChatController);
@@ -52,38 +50,43 @@ public class ClientController implements ClientListener {
 		
 		executor = new ThreadPoolExecutor(5, 
 				8, 
-				1000, TimeUnit.SECONDS, 
+				60, TimeUnit.SECONDS, 
 				new LinkedBlockingQueue<Runnable>());
 		
 		threads = Collections.synchronizedList(new LinkedList<>());
         
         start();
 	}
-
+	
 	@Override
-	public void eventOccured(ClientEvent event) {
+	public void errorOccured(Throwable error) {
 		
-		if(client.isOnline()) {
-			
-			Log.i(ClientController.class.getName(), "Client is online");
-			
-		} else {
-			
-			Log.i(ClientController.class.getName(), "Client is offline");
-			Log.i(ClientController.class.getName(), "Try to reconnect...");
-			start();
-		}
+		error.printStackTrace();
 	}
 	
-	public void start()  {
+	@Override
+	public void statusChanged(boolean status) {
+
+		privateChatController.changeConnexionState(status);
+	}
+	
+	@Override
+	public User getUser() {
+
+		Preferences preferences = Preferences.userRoot();
+		
+        final String name = preferences.get(Constant.USERNAME, null);
+		return new User(name);
+	}
+	
+	public synchronized void start()  {
 		
 		Preferences preferences = Preferences.userRoot();
 
-        final String name = preferences.get(Constant.USERNAME, null);
         final String host = preferences.get(Constant.HOSTNAME, null);
         final int port = preferences.getInt(Constant.HOSTPORT, -1);
         
-        if(name != null && host != null && port != -1) {
+        if(host != null && port != -1) {
 
         	new Thread(new Runnable() {
 				
@@ -93,18 +96,14 @@ public class ClientController implements ClientListener {
 			        while(client == null) {
 
 			            try {
-			                
-			                User user = new User(name);
 			        		
-			        		client = new Client(ClientController.this, user, host, port);
-
+			        		client = new Client(host, port);
+			        		client.registerObserver(ClientController.this);
+			        		
 							Future<?> thread = executor.submit(client);
 			    			threads.add(thread);
 			    			
-			    		} catch (Exception ignored) {
-			    			
-			    			client = null;
-			    		}
+			    		} catch (Exception ignored) {}
 			        }
 				}
 				
@@ -112,7 +111,7 @@ public class ClientController implements ClientListener {
         }
 	}
 	
-	public void stop() {
+	public synchronized void stop() {
 
 		if(client != null) {
 			
@@ -122,16 +121,31 @@ public class ClientController implements ClientListener {
 		for (Iterator<Future<?>> iterator = threads.iterator(); iterator.hasNext();) {
 			
 			Future<?> thread = iterator.next();
-			
-			if(!thread.isCancelled()) {
-				
-				thread.cancel(true);
-			}
+
+			thread.cancel(true);
 			
 			iterator.remove();
 		}
+
+		/*
+		executor.shutdown();
 		
-		executor.shutdownNow();
+		try {
+			
+			executor.awaitTermination(5, TimeUnit.SECONDS);
+			
+		} catch (InterruptedException ignored) {}
+		
+		*/
+	}
+
+	public synchronized void restart() {
+		
+		stop();
+		
+		client = null;
+		
+		start();
 	}
 
 }

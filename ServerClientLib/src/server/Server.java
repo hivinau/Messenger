@@ -23,14 +23,13 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 import server.event.*;
-import common.protocols.*;
+import common.Command;
 import common.annotations.*;
 import common.serializable.*;
 import java.util.concurrent.*;
-import common.protocols.event.*;
 
 @Developer(name="Hivinau GRAFFE")
-public class Server implements ProtocolObserver {
+public class Server extends AbstractServerObserver {
 	
 	public static class ServerConfiguration {
 		
@@ -218,7 +217,7 @@ public class Server implements ProtocolObserver {
 		
 		executor = new ThreadPoolExecutor(5, 
 				8, 
-				1000, TimeUnit.SECONDS, 
+				60, TimeUnit.SECONDS, 
 				new LinkedBlockingQueue<Runnable>());
 		
 		threads = Collections.synchronizedList(new LinkedList<>());
@@ -261,7 +260,7 @@ public class Server implements ProtocolObserver {
 						
 					} catch (IOException exception) {
 						
-						eventOccured(Server.this, exception);
+						//eventOccured(Server.this, exception);
 					}
 				}
 				
@@ -271,7 +270,7 @@ public class Server implements ProtocolObserver {
 					
 				} catch (IOException exception) {
 					
-					eventOccured(Server.this, exception);
+					//eventOccured(Server.this, exception);
 					serverSocket = null;
 				}
 			}
@@ -314,44 +313,48 @@ public class Server implements ProtocolObserver {
 			
 			iterator.remove();
 		}
-		
-		executor.shutdownNow();
+
+		//executor.shutdownNow();
 	}
 	
 	@Override
-	public void eventOccured(Object source, Object value) {
+	public void clientStatusChanged(ClientManager client, Object object) {
 		
-		if(source instanceof ClientManager) {
+		if(object == null) {
+			//client is offline
 			
-			if(value instanceof User) {
-				
-				ClientManager clientManager = (ClientManager) source;
-				
-				//add new client to clients list
-				User user = addClient(clientManager, (User) value); 
-				
-				if(user == null) {
-					
-					serverListener.eventOccured(new ServerEvent(this));
-					
-					//new connection occured, notify all clients for that event
-					sendMessage(new Message(SenderProtocol.USER_CONNECTED, value));
-				}
-				
-			} else if(value instanceof Message) {
-				
-				Message message = (Message) value;
-				
-				if(message.getCommand().equals(ReceiverProtocol.USER_DISCONNECTED)) {
+			User user = clients.get(client);
+			
+			//notify all clients for that event
+			Message contactOnline = new Message(Command.CONTACT_OFFLINE, user); 
+			broadcastMessage(contactOnline);
 
-					//remove client if value state is false represented socket is closed
-					removeClient((ClientManager) source);
-					
-					serverListener.eventOccured(new ServerEvent(this));
-				}
-			}
+			//remove client 
+			removeClient(client);
 			
+			serverListener.eventOccured(new ServerEvent(this));
+			
+		} else if(object instanceof User) {
+			//client is online
+			
+			//add new client to clients list
+			User user = addClient(client, (User) object); 
+			
+			if(user == null) { //check if user not exist on clients list
+				
+				serverListener.eventOccured(new ServerEvent(this));
+				
+				//notify all clients for that event
+				Message contactOnline = new Message(Command.CONTACT_ONLINE, user); 
+				broadcastMessage(contactOnline);
+			}
 		}
+	}
+	
+	@Override
+	public void errorOccured(Throwable error) {
+		
+		System.out.println(error.getMessage());
 	}
 	
 	/**
@@ -364,35 +367,11 @@ public class Server implements ProtocolObserver {
 		return clients.size();
 	}
 	
-	private void startMessageReceiver(ClientManager client) {
-		
-		try {
-
-			client.startMessageReceiver();
-			
-		} catch (IOException exception) {
-			
-			eventOccured(Server.this, exception);
-		}
-	}
-	
-	private void sendMessage(Message message) {
+	private void broadcastMessage(Message message) {
 
 		for(Map.Entry<ClientManager, User> entry: clients.entrySet()) {
 			
-			sendMessage(entry.getKey(), message);
-		}
-	}
-	
-	private void sendMessage(ClientManager clientManager, Message message) {
-		
-		try {
-			
-			clientManager.sendMessage(message);
-			
-		} catch (IOException exception) {
-			
-			eventOccured(Server.this, exception);
+			entry.getKey().sendMessage(message);
 		}
 	}
 	
